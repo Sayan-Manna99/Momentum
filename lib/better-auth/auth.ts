@@ -1,0 +1,33 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { betterAuth } from "better-auth";
+import { mongodbAdapter } from "better-auth/adapters/mongodb";
+import { connectToDB } from "../db/mongoose";
+import { nextCookies } from "better-auth/next-js";
+
+let authInstance: ReturnType<typeof betterAuth> | null = null;
+
+export const getAuth = async () => {
+  if (authInstance) return authInstance;
+  const mongoose = await connectToDB();
+  const db = mongoose.connection.db;
+  authInstance = betterAuth({
+    database: mongodbAdapter(db as any),
+    secret: process.env.BETTER_AUTH_SECRET!,
+    baseURL: process.env.BETTER_AUTH_URL!,
+    emailAndPassword: {
+      enabled: true,
+      disableSignUp: false,
+      requireEmailVerification: false,
+      minPasswordLength: 8,
+      maxPasswordLength: 128,
+      autoSignIn: true,
+    },
+    session:{
+        expiresIn:60*60*24*30,
+    },
+    plugins: [nextCookies()],
+  });
+  return authInstance
+};
+//this may not work see the suggestion later
+export const auth = await getAuth();
