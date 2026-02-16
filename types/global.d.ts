@@ -5,6 +5,15 @@ declare global{
     intro: string;
     dashboardUrl: string;
   };
+  type WeeklyReportEmailData = {
+    email: string;
+    name: string;
+    totalProjects: number;
+    completedProjects: number;
+    progress: number;
+    dashboardUrl: string;
+    aiMessage: string;
+  };
 }
 
 

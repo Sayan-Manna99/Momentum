@@ -1,5 +1,5 @@
 import { inngest } from "@/lib/inngest/client";
-import { sendWelcomeEmail } from "../resend/send-emails";
+import { sendWelcomeEmail } from "../resend/send-welcome-email";
 
 export const signUpEmail = inngest.createFunction(
   { id: "sign-up-email" },
@@ -33,6 +33,25 @@ export const signUpEmail = inngest.createFunction(
         success: true,
         message:"email sent successfully"
       };
+    });
+  },
+);
+
+//Send weekly report
+
+export const sendWeeklyReport = inngest.createFunction(
+  { id: "send-weekly-report" },
+  { cron: "0 9 * * 1" }, // Monday 9AM
+
+  async ({ step }) => {
+    await step.run("generate-weekly-report", async () => {
+      console.log("Weekly report job triggered");
+
+      // TODO: fetch users from database
+      // TODO: calculate progress
+      // TODO: send email
+
+      return { success: true };
     });
   },
 );
