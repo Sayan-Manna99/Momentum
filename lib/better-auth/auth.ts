@@ -29,5 +29,5 @@ export const getAuth = async () => {
   });
   return authInstance
 };
-//this may not work see the suggestion later
-export const auth = await getAuth();
+
+
