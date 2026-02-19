@@ -7,7 +7,7 @@ const Layout=({children}:{children:React.ReactNode})=>{
             <div className='container py-10'>
                 {children}
             </div>
-
+            
         </main>
     )
 }
