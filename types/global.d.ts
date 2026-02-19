@@ -14,6 +14,23 @@ declare global{
     dashboardUrl: string;
     aiMessage: string;
   };
+
+  type FormInputProps = {
+    name: string;
+    label: string;
+    placeholder: string;
+    type?: string;
+    register: UseFormRegister;
+    error?: FieldError;
+    validation?: RegisterOptions;
+    disabled?: boolean;
+    value?: string;
+  };
+  type FooterLinkProps = {
+    text: string;
+    linkText: string;
+    href: string;
+  };
 }
 
 

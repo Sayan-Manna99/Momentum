@@ -29,7 +29,7 @@ function UserDropdown() {
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="flex items-center gap-3 text-gray-400 hover:text-blue-400"
+          className="flex items-center gap-3 text-gray-400 hover:text-blue-400 hover:bg-gray-500"
         >
           <Avatar className="h-8 w-8">
             <AvatarFallback className="bg-blue-600 text-white text-sm font-bold">
@@ -37,7 +37,7 @@ function UserDropdown() {
             </AvatarFallback>
           </Avatar>
           <div className="hidden md:flex flex-col items-start">
-            <span className="text-sm font-medium text-gray-200 hover:text-blue-600">
+            <span className="text-sm font-medium text-gray-200">
               {user.name}
             </span>
           </div>
@@ -71,7 +71,7 @@ function UserDropdown() {
         
         <DropdownMenuItem
           onClick={handleSignOut}
-          className="text-white font-medium focus:bg-transparent focus:text-blue-600 transition-colors cursor-pointer"
+          className="text-gray-500 font-medium focus:bg-transparent focus:text-blue-400 transition-colors cursor-pointer"
         >
           <LogOut className="h-4 w-4 hidden sm:block" />
           LogOut
