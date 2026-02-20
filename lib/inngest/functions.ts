@@ -3,7 +3,7 @@ import { sendWelcomeEmail } from "../resend/send-welcome-email";
 
 export const signUpEmail = inngest.createFunction(
   { id: "sign-up-email" },
-  { event: "api/user.created" },
+  { event: "app/user.created" },
 
   async ({ event, step }) => {
     return await step.run("send-welcome-email", async () => {

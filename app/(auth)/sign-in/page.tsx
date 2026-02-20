@@ -1,41 +1,58 @@
 "use client";
 import { SubmitHandler, useForm } from "react-hook-form";
 import {
-  SignUpFormData,
-  SignUpSchema,
+  SignInSchema,
+  
 } from "@/lib/validations/auth.validation";
 import { Button } from "@/components/ui/button";
 import InputField from "@/components/forms/InputField";
 import { zodResolver } from "@hookform/resolvers/zod";
 import FooterLink from "@/components/forms/FooterLink";
 
+import { signInWithEmail} from "@/lib/actions/auth.actions";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+
 function SignIn() {
+   const router = useRouter();
   const {
     register,
     handleSubmit,
-    control,
+   
     formState: { errors, isSubmitting },
-  } = useForm<SignUpFormData>({
+  } = useForm<SignInFormData>({
     defaultValues: {
     
       email: "",
       password: "",
      
     },
-    resolver: zodResolver(SignUpSchema),
+    resolver: zodResolver(SignInSchema),
     mode: "onBlur",
   });
 
-  const onSubmit: SubmitHandler<SignUpFormData> = async (
-    data: SignUpFormData,
+  
+  const onSubmit: SubmitHandler<SignInFormData> = async (
+    data: SignInFormData,
   ): Promise<void> => {
     try {
-      console.log(data);
+      const result = await signInWithEmail(data);
+      if (!result.success) {
+        //  Show error toast
+        toast.error(result.message || "Sign in failed. Please try again.");
+
+        return;
+      }
+      // Show success toast
+      toast.success("You have successfully signed in.");
+
+      // Redirect to dashboard
+      router.push("/");
+      router.refresh(); //  Added refresh to update session
     } catch (error) {
       console.error(error);
     }
   };
-
   return (
     <>
       <h1 className="form-title">Sign Up & Start your Momentum</h1>
@@ -64,7 +81,7 @@ function SignIn() {
           disabled={isSubmitting}
           className="blue-btn w-full mt-5"
         >
-          {isSubmitting ? "Creating Account" : "Start Your Momentum Today"}
+          {isSubmitting ? "Signing In......" : "Sign in to Your Account"}
         </Button>
         <FooterLink
           text="Do not  have an account ?"

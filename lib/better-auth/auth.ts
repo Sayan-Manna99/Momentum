@@ -10,6 +10,7 @@ export const getAuth = async () => {
   if (authInstance) return authInstance;
   const mongoose = await connectToDB();
   const db = mongoose.connection.db;
+  if(!db) throw new Error("Mongodb connection not found")
   authInstance = betterAuth({
     database: mongodbAdapter(db as any),
     secret: process.env.BETTER_AUTH_SECRET!,
