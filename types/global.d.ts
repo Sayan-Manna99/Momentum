@@ -31,7 +31,20 @@ declare global{
     linkText: string;
     href: string;
   };
+  type User={
+    id:string,
+    email:string,
+    name:string
+  }
+  type SignUpFormData={
+    name:string,
+    email:string,
+    password:string
+  }
+  type SignInFormData={
+    email:string,
+    password:string
+  }
+
 }
-
-
 export {};

@@ -1,9 +1,10 @@
+'use client'
 import Link from 'next/link'
 
 import Image from 'next/image'
 import NavItems from './auth/NavItems'
 import UserDropdown from './auth/UserDropdown'
-function Header() {
+function Header({user}:{user:User}) {
   return (
     <header className="sticky top-0 header">
         <div className='container header-wrapper'>
@@ -13,7 +14,7 @@ function Header() {
             <nav className='hidden md:block'>
                 <NavItems/>
             </nav>
-            <UserDropdown/>
+            <UserDropdown user={user}/>
         </div>
     </header>
   )

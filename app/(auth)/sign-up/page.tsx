@@ -5,12 +5,17 @@ import { Button } from "@/components/ui/button";
 import InputField from "@/components/forms/InputField";
 import { zodResolver } from "@hookform/resolvers/zod";
 import FooterLink from "@/components/forms/FooterLink";
+import { signUpWithEmail } from "@/lib/actions/auth.actions";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 function SignUp() {
+  const router = useRouter();
+  
   const {
     register,
     handleSubmit,
-    control,
+
     formState: { errors, isSubmitting },
   } = useForm<SignUpFormData>({
     defaultValues: {
@@ -23,13 +28,27 @@ function SignUp() {
     mode: "onBlur",
   });
 
-  const onSubmit: SubmitHandler<SignUpFormData> = async (data: SignUpFormData): Promise<void> => {
+  const onSubmit: SubmitHandler<SignUpFormData> = async (
+    data: SignUpFormData,
+  ): Promise<void> => {
     try {
-      console.log(data)
+      const result = await signUpWithEmail(data);
+      if (!result.success) {
+        //  Show error toast
+        toast.error(result.message || "Sign up failed. Please try again.");
+
+        return;
+      }
+      // Show success toast
+      toast.success("Your account has been created.");
+
+      // Redirect to dashboard
+      router.push("/");
+      router.refresh(); //  Added refresh to update session
     } catch (error) {
-      console.error(error)
+      console.error(error);
     }
-  }
+  };
 
   return (
     <>
@@ -75,9 +94,9 @@ function SignUp() {
           disabled={isSubmitting}
           className="blue-btn w-full mt-5"
         >
-          {isSubmitting ? "Creating Account" : "Start Your Momentum Today"}
+          {isSubmitting ? "Creating Account...." : "Start Your Momentum Today"}
         </Button>
-        
+
         <FooterLink
           text="Already have an account ?"
           linkText="Sign In"
