@@ -1,37 +1,31 @@
 "use client";
 import { SubmitHandler, useForm } from "react-hook-form";
-import {
-  SignInSchema,
-  
-} from "@/lib/validations/auth.validation";
+import { SignInSchema } from "@/lib/validators/auth.validation";
 import { Button } from "@/components/ui/button";
 import InputField from "@/components/forms/InputField";
 import { zodResolver } from "@hookform/resolvers/zod";
 import FooterLink from "@/components/forms/FooterLink";
 
-import { signInWithEmail} from "@/lib/actions/auth.actions";
+import { signInWithEmail } from "@/lib/actions/auth.actions";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
 function SignIn() {
-   const router = useRouter();
+  const router = useRouter();
   const {
     register,
     handleSubmit,
-   
+
     formState: { errors, isSubmitting },
   } = useForm<SignInFormData>({
     defaultValues: {
-    
       email: "",
       password: "",
-     
     },
     resolver: zodResolver(SignInSchema),
     mode: "onBlur",
   });
 
-  
   const onSubmit: SubmitHandler<SignInFormData> = async (
     data: SignInFormData,
   ): Promise<void> => {

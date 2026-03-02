@@ -1,6 +1,6 @@
-'use client'
+"use client";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { SignUpFormData, SignUpSchema } from '@/lib/validations/auth.validation';
+import { SignUpFormData, SignUpSchema } from "@/lib/validators/auth.validation";
 import { Button } from "@/components/ui/button";
 import InputField from "@/components/forms/InputField";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,7 +11,7 @@ import { toast } from "sonner";
 
 function SignUp() {
   const router = useRouter();
-  
+
   const {
     register,
     handleSubmit,
@@ -107,4 +107,4 @@ function SignUp() {
   );
 }
 
-export default SignUp
+export default SignUp;
