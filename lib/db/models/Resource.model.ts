@@ -21,12 +21,12 @@ const ResourceSchema = new Schema(
       index: true,
     },
 
-    // Project Association (Optional - resources can exist without projects)
+    // Project Association
     projectId: {
       type: Schema.Types.ObjectId,
       ref: "Project",
       index: true,
-      default: null,
+      required: true,
     },
 
     // Basic Info
@@ -53,30 +53,18 @@ const ResourceSchema = new Schema(
     },
 
     // YouTube Specific Data
-       youtubeData: {
-          videoId: String,
-          playlistId: String,      
-          channelId: String,      
-          channelTitle: String,  
-          title: String,           
-          thumbnailUrl: String,   
-          duration: Number,        
-          publishedAt: Date,      
-      },
-      // For playlists
-      videoCount: Number,
-      videos: [
-        {
-          videoId: String,
-          title: String,
-          description: String,
-          duration: Number,
-          position: Number,
-          thumbnailUrl: String,
-          publishedAt: Date,
-        },
-      ],
-    
+    youtubeData: {
+      videoId: String,
+      playlistId: String,
+      channelId: String,
+      channelTitle: String,
+      title: String,
+      thumbnailUrl: String,
+      duration: Number,
+      publishedAt: Date,
+    },
+    // For playlists
+    videoCount: Number,
 
     // PDF Specific Data
     pdfData: {
@@ -88,11 +76,8 @@ const ResourceSchema = new Schema(
       mimeType: String,
     },
 
-
-
     // Classification
     tags: [String],
-   
 
     // Metadata
     totalDuration: {
@@ -133,13 +118,16 @@ const ResourceSchema = new Schema(
     },
   },
   {
+    toJSON: { versionKey: false },
+    toObject: { versionKey: false },
     timestamps: true,
   },
 );
 
 // Indexes
+
 ResourceSchema.index({ userId: 1, createdAt: -1 });
-ResourceSchema.index({ userId: 1, projectId: 1 });
+ResourceSchema.index({ userId: 1, projectId: 1, order: 1 });
 ResourceSchema.index({ userId: 1, type: 1 });
 ResourceSchema.index({ userId: 1, status: 1 });
 ResourceSchema.index({ userId: 1, isFavorite: -1 });
