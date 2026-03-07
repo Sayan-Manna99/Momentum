@@ -21,12 +21,12 @@ const ResourceSchema = new Schema(
       index: true,
     },
 
-    // Project Association (Optional - resources can exist without projects)
+    // Project Association
     projectId: {
       type: Schema.Types.ObjectId,
       ref: "Project",
       index: true,
-      default: null,
+      required: true,
     },
 
     // Basic Info
@@ -53,30 +53,18 @@ const ResourceSchema = new Schema(
     },
 
     // YouTube Specific Data
-       youtubeData: {
-          videoId: String,
-          playlistId: String,      
-          channelId: String,      
-          channelTitle: String,  
-          title: String,           
-          thumbnailUrl: String,   
-          duration: Number,        
-          publishedAt: Date,      
-      },
-      // For playlists
-      videoCount: Number,
-      videos: [
-        {
-          videoId: String,
-          title: String,
-          description: String,
-          duration: Number,
-          position: Number,
-          thumbnailUrl: String,
-          publishedAt: Date,
-        },
-      ],
-    
+    youtubeData: {
+      videoId: String,
+      playlistId: String,
+      channelId: String,
+      channelTitle: String,
+      title: String,
+      thumbnailUrl: String,
+      duration: Number,
+      publishedAt: Date,
+    },
+    // For playlists
+    videoCount: Number,
 
     // PDF Specific Data
     pdfData: {
@@ -88,22 +76,15 @@ const ResourceSchema = new Schema(
       mimeType: String,
     },
 
-
-
     // Classification
     tags: [String],
-   
 
     // Metadata
-    totalDuration: {
-      type: Number, // in seconds
-      default: 0,
+   
+    contentLength: {
+      type: Number,
+      default: 0
     },
-    estimatedReadTime: {
-      type: Number, // in minutes (for PDFs/articles)
-      default: 0,
-    },
-
     // User Interaction
     rating: {
       type: Number,
@@ -133,32 +114,22 @@ const ResourceSchema = new Schema(
     },
   },
   {
+    toJSON: { versionKey: false },
+    toObject: { versionKey: false },
     timestamps: true,
   },
 );
 
 // Indexes
+
 ResourceSchema.index({ userId: 1, createdAt: -1 });
-ResourceSchema.index({ userId: 1, projectId: 1 });
+ResourceSchema.index({ userId: 1, projectId: 1, order: 1 });
 ResourceSchema.index({ userId: 1, type: 1 });
 ResourceSchema.index({ userId: 1, status: 1 });
 ResourceSchema.index({ userId: 1, isFavorite: -1 });
 ResourceSchema.index({ "youtubeData.videoId": 1 });
 ResourceSchema.index({ "youtubeData.playlistId": 1 });
 
-// Virtual for formatted duration
-ResourceSchema.virtual("formattedDuration").get(function () {
-  if (!this.totalDuration) return "0:00";
-
-  const hours = Math.floor(this.totalDuration / 3600);
-  const minutes = Math.floor((this.totalDuration % 3600) / 60);
-  const seconds = this.totalDuration % 60;
-
-  if (hours > 0) {
-    return `${hours}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
-  }
-  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-});
 
 // Method to increment access count
 ResourceSchema.methods.recordAccess = async function () {
