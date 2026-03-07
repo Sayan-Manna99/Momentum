@@ -80,15 +80,11 @@ const ResourceSchema = new Schema(
     tags: [String],
 
     // Metadata
-    totalDuration: {
-      type: Number, // in seconds
-      default: 0,
+   
+    contentLength: {
+      type: Number,
+      default: 0
     },
-    estimatedReadTime: {
-      type: Number, // in minutes (for PDFs/articles)
-      default: 0,
-    },
-
     // User Interaction
     rating: {
       type: Number,
@@ -134,19 +130,6 @@ ResourceSchema.index({ userId: 1, isFavorite: -1 });
 ResourceSchema.index({ "youtubeData.videoId": 1 });
 ResourceSchema.index({ "youtubeData.playlistId": 1 });
 
-// Virtual for formatted duration
-ResourceSchema.virtual("formattedDuration").get(function () {
-  if (!this.totalDuration) return "0:00";
-
-  const hours = Math.floor(this.totalDuration / 3600);
-  const minutes = Math.floor((this.totalDuration % 3600) / 60);
-  const seconds = this.totalDuration % 60;
-
-  if (hours > 0) {
-    return `${hours}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
-  }
-  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-});
 
 // Method to increment access count
 ResourceSchema.methods.recordAccess = async function () {
