@@ -1,4 +1,4 @@
-import mongoose, { Schema, model, models } from "mongoose";
+import  { Schema, model, models } from "mongoose";
 
 export enum ProgressStatus {
   NOT_STARTED = "not_started",
@@ -33,7 +33,7 @@ const ProgressSchema = new Schema(
       enum: Object.values(ProgressStatus),
       default: ProgressStatus.NOT_STARTED,
     },
-    
+
     // Video Progress
     watchedDuration: {
       type: Number,
@@ -47,7 +47,7 @@ const ProgressSchema = new Schema(
       type: Number,
       default: 0,
     },
-    
+
     // Playlist Progress
     completedVideos: [String], // Array of videoIds
     videoProgress: [
@@ -136,7 +136,9 @@ const ProgressSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+    toJSON: { versionKey: false },
+    toObject: { versionKey: false },
+  },
 );
 
 // Compound index for unique user-resource combination
@@ -150,12 +152,12 @@ ProgressSchema.methods.startSession = async function () {
   this.sessions.push({
     startTime: new Date(),
   });
-  
+
   if (!this.startedAt) {
     this.startedAt = new Date();
     this.status = ProgressStatus.IN_PROGRESS;
   }
-  
+
   await this.save();
   return this.sessions[this.sessions.length - 1];
 };
@@ -163,16 +165,17 @@ ProgressSchema.methods.startSession = async function () {
 // Method to end current session
 ProgressSchema.methods.endSession = async function () {
   const currentSession = this.sessions[this.sessions.length - 1];
-  
+
   if (currentSession && !currentSession.endTime) {
     currentSession.endTime = new Date();
     currentSession.duration = Math.floor(
-      (currentSession.endTime.getTime() - currentSession.startTime.getTime()) / 1000
+      (currentSession.endTime.getTime() - currentSession.startTime.getTime()) /
+        1000,
     );
-    
+
     this.totalTimeSpent += currentSession.duration;
   }
-  
+
   this.lastAccessedAt = new Date();
   await this.save();
 };
@@ -181,17 +184,17 @@ ProgressSchema.methods.endSession = async function () {
 ProgressSchema.methods.updateStreak = async function () {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  
+
   const lastActivity = this.lastActivityDate
     ? new Date(this.lastActivityDate)
     : null;
-  
+
   if (lastActivity) {
     lastActivity.setHours(0, 0, 0, 0);
     const daysDiff = Math.floor(
-      (today.getTime() - lastActivity.getTime()) / (1000 * 60 * 60 * 24)
+      (today.getTime() - lastActivity.getTime()) / (1000 * 60 * 60 * 24),
     );
-    
+
     if (daysDiff === 0) {
       // Same day, no change
       return;
@@ -208,7 +211,7 @@ ProgressSchema.methods.updateStreak = async function () {
   } else {
     this.currentStreak = 1;
   }
-  
+
   this.lastActivityDate = new Date();
   await this.save();
 };
@@ -216,6 +219,3 @@ ProgressSchema.methods.updateStreak = async function () {
 const Progress = models.Progress || model("Progress", ProgressSchema);
 
 export default Progress;
-
-
-
