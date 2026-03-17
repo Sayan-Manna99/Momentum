@@ -58,6 +58,7 @@ const ProgressSchema = new Schema(
       {
         videoId: { type: String, required: true },
         watchedDuration: { type: Number, default: 0 },
+        duration: { type: Number, required: true },
         lastPosition: { type: Number, default: 0 },
         completed: { type: Boolean, default: false },
         lastWatchedAt: Date,

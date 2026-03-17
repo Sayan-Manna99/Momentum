@@ -40,8 +40,11 @@ export const updateProgress = async (
      return updateVideoProgress(userId, resourceId, data.position);
 
    case ResourceType.YOUTUBE_PLAYLIST:
-     return updatePlaylistProgress(userId, resourceId, data.videoId);
-
+     return  updatePlaylistProgress(userId, resourceId, {
+      videoId: data.videoId,
+      position: data.position,
+      duration: data.duration,
+      });
    case ResourceType.PDF:
      return updatePdfProgress(userId, resourceId, {
        pagesRead: data.pagesRead,

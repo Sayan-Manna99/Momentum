@@ -62,5 +62,18 @@ declare global{
     pagesRead: number;
     lastPageRead: number;
   };
+  type PlaylistProgressInput = {
+    videoId: string;
+    position: number;
+    duration: number;
+  };
+  type VideoProgressItem = {
+    videoId: string;
+    duration: number;
+    watchedDuration: number;
+    lastPosition: number;
+    completed: boolean;
+    lastWatchedAt?: Date;
+  };
 }
 export {};
