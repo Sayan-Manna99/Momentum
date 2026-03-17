@@ -58,5 +58,9 @@ declare global{
     videoCount?: number;
     tags?: string[];
   };
+  type PdfProgressInput = {
+    pagesRead: number;
+    lastPageRead: number;
+  };
 }
 export {};

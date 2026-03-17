@@ -1,5 +1,6 @@
 import Resource from "@/lib/db/models/Resource.model";
 import { uploadPdf } from "@/lib/utils/uploadPdf";
+import { PDFDocument } from "pdf-lib";
 
 type CreatePdfResourceData = {
   title: string;
@@ -12,23 +13,38 @@ export const createPdfResource = async (
   data: CreatePdfResourceData,
 ) => {
   try {
-     const upload = await uploadPdf(data.file);
+    // 1. Convert file to ArrayBuffer
+    const arrayBuffer = await data.file.arrayBuffer();
 
-     const resource = await Resource.create({
-       userId,
-       projectId,
-       title: data.title,
-       type: "pdf",
-       pdfData: {
-         cloudinaryUrl: upload.url,
-         cloudinaryPublicId: upload.publicId,
-         fileSize: upload.bytes,
-         pageCount: 0,
-       },
-       tags: [],
-     });
+    // 2. Extract page count using pdf-lib
+    let totalPages = 1; // safe default
 
-     return resource;
+    try {
+      const pdfDoc = await PDFDocument.load(arrayBuffer);
+      totalPages = pdfDoc.getPageCount();
+    } catch (error) {
+      console.warn("Could not extract PDF page count:", error);
+    }
+
+    // 3. Upload PDF
+    const upload = await uploadPdf(data.file);
+
+    // 4. Save resource
+    const resource = await Resource.create({
+      userId,
+      projectId,
+      title: data.title,
+      type: "pdf",
+      pdfData: {
+        cloudinaryUrl: upload.url,
+        cloudinaryPublicId: upload.publicId,
+        fileSize: upload.bytes,
+        pageCount: totalPages,
+      },
+      tags: [],
+    });
+
+    return resource;
   } catch (error) {
     console.error("Error creating PDF resource:", error);
     throw new Error("Failed to create PDF resource");

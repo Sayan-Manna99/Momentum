@@ -1,5 +1,5 @@
 import Progress from "../../db/models/Progress.model";
-import Resource from "../../db/models/Resource.model";
+import Resource, { ResourceType } from "../../db/models/Resource.model";
 import { ProgressStatus } from "../../db/models/Progress.model";
 import { updateProjectStats } from '@/lib/services/project.servise'
 import { updateVideoProgress } from '@/lib/services/progress/video.progress.service';
@@ -33,19 +33,24 @@ export const updateProgress = async (
     throw new Error("Resource not found");
   }
 
-  switch (resource.type) {
-    case "youtube_video":
-      return updateVideoProgress(userId, resourceId, data.position);
 
-    case "youtube_playlist":
-      return updatePlaylistProgress(userId, resourceId, data.videoId);
 
-    case "pdf":
-      return updatePdfProgress(userId, resourceId, data.page);
+ switch (resource.type) {
+   case ResourceType.YOUTUBE_VIDEO:
+     return updateVideoProgress(userId, resourceId, data.position);
 
-    default:
-      throw new Error("Unsupported resource type");
-  }
+   case ResourceType.YOUTUBE_PLAYLIST:
+     return updatePlaylistProgress(userId, resourceId, data.videoId);
+
+   case ResourceType.PDF:
+     return updatePdfProgress(userId, resourceId, {
+       pagesRead: data.pagesRead,
+       lastPageRead: data.lastPageRead,
+     });
+
+   default:
+     throw new Error("Unsupported resource type");
+ }
 };
 
 

@@ -1,5 +1,6 @@
 import { UploadApiResponse, UploadApiErrorResponse } from "cloudinary";
 import cloudinary from "@/lib/cloudinary/config";
+import { Readable } from "stream";
 
 export interface UploadedFile {
   url: string;
@@ -23,6 +24,7 @@ export const uploadPdf = async (file: File): Promise<UploadedFile> => {
         result: UploadApiResponse | undefined,
       ) => {
         if (error) {
+          console.error("Cloudinary upload error:", error);
           reject(error);
           return;
         }
@@ -41,6 +43,8 @@ export const uploadPdf = async (file: File): Promise<UploadedFile> => {
       },
     );
 
-    uploadStream.end(buffer);
+    // ✅ Convert buffer to readable stream and pipe it
+    const readableStream = Readable.from(buffer);
+    readableStream.pipe(uploadStream);
   });
 };

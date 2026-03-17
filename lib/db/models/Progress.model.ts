@@ -1,5 +1,5 @@
 import  { Schema, model, models } from "mongoose";
-
+import { ResourceType } from "@/lib/db/models/Resource.model";
 export enum ProgressStatus {
   NOT_STARTED = "not_started",
   IN_PROGRESS = "in_progress",
@@ -26,7 +26,11 @@ const ProgressSchema = new Schema(
       index: true,
       default: null,
     },
-
+    resourceType: {
+      type: String,
+      enum: Object.values(ResourceType),
+      required: true,
+    },
     // Status
     status: {
       type: String,
@@ -49,19 +53,22 @@ const ProgressSchema = new Schema(
     },
 
     // Playlist Progress
-    completedVideos: [String], // Array of videoIds
+
     videoProgress: [
       {
-        videoId: String,
-        watchedDuration: Number,
-        lastPosition: Number,
-        completed: Boolean,
+        videoId: { type: String, required: true },
+        watchedDuration: { type: Number, default: 0 },
+        lastPosition: { type: Number, default: 0 },
+        completed: { type: Boolean, default: false },
         lastWatchedAt: Date,
       },
     ],
 
     // PDF Progress
-    pagesRead: [Number], // Array of page numbers
+    pagesRead: {
+      type: Number,
+      default: 0,
+    }, // Array of page numbers
     lastPageRead: {
       type: Number,
       default: 0,
@@ -76,12 +83,6 @@ const ProgressSchema = new Schema(
         },
       },
     ],
-
-    // Article Progress
-    scrollPosition: {
-      type: Number,
-      default: 0, // percentage
-    },
 
     // Calculated Progress
     progressPercentage: {
@@ -146,7 +147,7 @@ ProgressSchema.index({ userId: 1, resourceId: 1 }, { unique: true });
 ProgressSchema.index({ userId: 1, status: 1 });
 ProgressSchema.index({ userId: 1, projectId: 1 });
 ProgressSchema.index({ userId: 1, lastAccessedAt: -1 });
-
+ProgressSchema.index({ resourceId: 1 });
 // Method to start a new session
 ProgressSchema.methods.startSession = async function () {
   this.sessions.push({
