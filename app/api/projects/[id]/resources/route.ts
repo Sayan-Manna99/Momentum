@@ -2,13 +2,16 @@ import { getAuth } from "@/lib/better-auth/auth";
 import { headers } from "next/headers";
 import { NextRequest } from "next/server";
 import mongoose from "mongoose";
-import { createResource, getResourcesByProjectId } from "@/lib/services/resource.service";
+import { createResource, getResourcesByProjectId } from "@/lib/services/resources/resource.service";
 import { createResourceSchema } from "@/lib/validators/resource.validation";
 
 //create  resource
+
+//create  resource
+// create resource
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
@@ -27,6 +30,32 @@ export async function POST(
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const contentType = req.headers.get("content-type");
+
+    // ---------- PDF Upload ----------
+    if (contentType?.includes("multipart/form-data")) {
+      const formData = await req.formData();
+
+      const title = formData.get("title") as string;
+      const file = formData.get("file") as File;
+
+      if (!title || !file) {
+        return Response.json(
+          { error: "Title and file are required" },
+          { status: 400 }
+        );
+      }
+
+      const resource = await createResource(session.user.id, id, {
+        type: "pdf",
+        title,
+        file,
+      });
+
+      return Response.json(resource, { status: 201 });
+    }
+
+    // ---------- JSON Resources (Video / Playlist) ----------
     const body = await req.json();
 
     const validatedData = createResourceSchema.parse(body);
@@ -34,6 +63,7 @@ export async function POST(
     const resource = await createResource(session.user.id, id, validatedData);
 
     return Response.json(resource, { status: 201 });
+
   } catch (error: unknown) {
     if (error instanceof Error) {
       return Response.json({ error: error.message }, { status: 500 });

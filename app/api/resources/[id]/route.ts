@@ -6,7 +6,7 @@ import {
   deleteResourceById,
   getResourceById,
   updateResourceById,
-} from "@/lib/services/resource.service";
+} from "@/lib/services/resources/resource.service";
 import { updateResourceSchema } from "@/lib/validators/resource.validation";
 
 //get single resource by id

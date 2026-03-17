@@ -45,6 +45,18 @@ declare global{
     email:string,
     password:string
   }
-
+  type ResourceHandler = (
+    userId: string,
+    projectId: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    data: any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ) => Promise<any>;
+  type CreatePlaylistResourceData = {
+    title: string;
+    url: string;
+    videoCount?: number;
+    tags?: string[];
+  };
 }
 export {};

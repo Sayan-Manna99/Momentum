@@ -3,6 +3,10 @@ import {
   CreateProjectData,
   UpdateProjectData,
 } from "../validators/project.validator";
+import Resource from "../db/models/Resource.model";
+import Progress from "../db/models/Progress.model";
+import { ProgressStatus } from "../db/models/Progress.model";
+
 
 export const createProject = async (
   data: CreateProjectData,
@@ -15,6 +19,7 @@ export const createProject = async (
 
   return project;
 };
+
 export const getProjectsByUserId = async (userId: string) => {
   const projects = await Project.find({ userId })
     .sort({ createdAt: -1 })
@@ -49,3 +54,29 @@ export const deleteOneProject = async (userId: string, projectId: string) => {
   const result = await Project.deleteOne({ userId, _id: projectId }).exec();
   return result.deletedCount === 1;
 }
+
+export const  updateProjectStats = async (projectId: string, userId: string) => {
+  const totalResources = await Resource.countDocuments({
+    projectId,
+    userId,
+  });
+
+  const completedResources = await Progress.countDocuments({
+    projectId,
+    userId,
+    status: ProgressStatus.COMPLETED,
+  });
+
+  const progressPercentage =
+    totalResources === 0
+      ? 0
+      : Math.floor((completedResources / totalResources) * 100);
+
+  await Project.findByIdAndUpdate(projectId, {
+    stats: {
+      totalResources,
+      completedResources,
+      progressPercentage,
+    },
+  });
+};

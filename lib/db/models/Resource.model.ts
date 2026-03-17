@@ -85,6 +85,10 @@ const ResourceSchema = new Schema(
       type: Number,
       default: 0
     },
+    totalDuration: {
+    type: Number,
+    default: 0
+    },
     // User Interaction
     rating: {
       type: Number,
