@@ -1,7 +1,7 @@
 import Progress, { ProgressStatus } from "@/lib/db/models/Progress.model";
-import Resource from "@/lib/db/models/Resource.model";
-import { ResourceType } from "@/lib/db/models/Resource.model";
+import Resource, { ResourceType } from "@/lib/db/models/Resource.model";
 import { updateProjectStats } from "../project.servise";
+import { extractYoutubeData } from "@/lib/utils/youTube"; // ✅ ADD
 
 export const updatePlaylistProgress = async (
   userId: string,
@@ -9,17 +9,35 @@ export const updatePlaylistProgress = async (
   data: PlaylistProgressInput,
 ) => {
   try {
-    // 1. Get resource (for projectId)
+    // ✅ 0. VALIDATION (CRITICAL)
+    if (!data.videoId) {
+      throw new Error("videoId is required");
+    }
+
+    if (data.position === undefined) {
+      throw new Error("position is required");
+    }
+
+    // ✅ 1. Extract clean videoId
+    const extracted = extractYoutubeData(data.videoId);
+    const videoId = extracted?.videoId || data.videoId;
+
+    if (!videoId) {
+      throw new Error("Invalid videoId");
+    }
+
+    // 2. Get resource
     const resource = await Resource.findById(resourceId)
       .select("projectId")
-      .lean();
+      .lean()
+      .exec();
 
     if (!resource) {
       throw new Error("Playlist resource not found");
     }
 
-    // 2. Get or create progress
-    let progress = await Progress.findOne({ userId, resourceId });
+    // 3. Get or create progress
+    let progress = await Progress.findOne({ userId, resourceId }).exec();
 
     if (!progress) {
       progress = await Progress.create({
@@ -31,56 +49,58 @@ export const updatePlaylistProgress = async (
       });
     }
 
-    // 3. Find video in array
-    let video = progress.videoProgress.find((v: typeof progress.videoProgress[0]) => v.videoId === data.videoId);
+    // 4. Find video
+    let video = progress.videoProgress.find(
+      (v: VideoProgressItem) => v.videoId === videoId,
+    );
 
-    // 4. If not exists → create
+    // 5. Create if not exists
     if (!video) {
       video = {
-        videoId: data.videoId,
-        duration: data.duration,
+        videoId,
+        duration: data.duration ?? 0,
         watchedDuration: 0,
         lastPosition: 0,
         completed: false,
         lastWatchedAt: new Date(),
       };
 
-      progress.videoProgress.push(video);
+      progress.videoProgress.push(video as VideoProgressItem);
     }
 
-    // 5. Safe inputs
+    // ✅ 6. Safe position (NOW GUARANTEED)
     const safePosition = Math.max(0, data.position);
 
-    // 6. Prevent rollback
+    // 7. Prevent rollback
     video.watchedDuration = Math.max(video.watchedDuration, safePosition);
 
-    // 7. Clamp to duration
+    // 8. Clamp
     video.watchedDuration = Math.min(video.watchedDuration, video.duration);
 
-    // 8. Update last position
+    // 9. Update position
     video.lastPosition = safePosition;
     video.lastWatchedAt = new Date();
 
-    // 9. Completion logic per video
-    if (video.watchedDuration / video.duration >= 0.95) {
+    // 10. Completion per video
+    if (video.duration > 0 && video.watchedDuration / video.duration >= 0.95) {
       video.completed = true;
     }
 
-    // 10. Recalculate playlist progress
+    // 11. Playlist progress
     const totalDuration = progress.videoProgress.reduce(
       (acc: number, v: VideoProgressItem) => acc + v.duration,
       0,
     );
 
     const totalWatched = progress.videoProgress.reduce(
-      (acc:number, v:VideoProgressItem) => acc + v.watchedDuration,
+      (acc: number, v: VideoProgressItem) => acc + v.watchedDuration,
       0,
     );
 
     progress.progressPercentage =
-      totalDuration > 0 ? (totalWatched / totalDuration) * 100 : 0;
+      totalDuration > 0 ? Math.floor((totalWatched / totalDuration) * 100) : 0;
 
-    // 11. Status
+    // 12. Status
     if (!progress.startedAt) {
       progress.startedAt = new Date();
     }
@@ -95,25 +115,20 @@ export const updatePlaylistProgress = async (
       progress.status = ProgressStatus.IN_PROGRESS;
     }
 
-    // 12. Timestamp
+    // 13. Timestamp
     progress.lastAccessedAt = new Date();
 
-    // 13. Save
+    // 14. Save
     await progress.save();
 
-    // 14. Update project stats
+    // 15. Update project stats
     if (resource.projectId) {
       await updateProjectStats(resource.projectId, userId);
     }
 
     return progress;
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      console.error("Error updating playlist progress:", error.message);
-      throw new Error("Failed to update playlist progress");
-    } else {
-      console.error("Unknown error updating playlist progress:", error);
-      throw new Error("Failed to update playlist progress");
-    }
+  } catch (error) {
+    console.error("Error updating playlist progress:", error);
+    throw new Error("Failed to update playlist progress");
   }
 };

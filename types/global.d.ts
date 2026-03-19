@@ -1,4 +1,4 @@
-declare global{
+declare global {
   type WelcomeEmailData = {
     email: string;
     name: string;
@@ -31,20 +31,20 @@ declare global{
     linkText: string;
     href: string;
   };
-  type User={
-    id:string,
-    email:string,
-    name:string
-  }
-  type SignUpFormData={
-    name:string,
-    email:string,
-    password:string
-  }
-  type SignInFormData={
-    email:string,
-    password:string
-  }
+  type User = {
+    id: string;
+    email: string;
+    name: string;
+  };
+  type SignUpFormData = {
+    name: string;
+    email: string;
+    password: string;
+  };
+  type SignInFormData = {
+    email: string;
+    password: string;
+  };
   type ResourceHandler = (
     userId: string,
     projectId: string,
@@ -75,5 +75,27 @@ declare global{
     completed: boolean;
     lastWatchedAt?: Date;
   };
+
+  // ---------------- TYPES ----------------
+
+  type VideoProgressInput = {
+    position: number;
+  };
+
+  type PlaylistProgressInput = {
+    videoId: string;
+    position: number;
+    duration: number;
+  };
+
+  type PdfProgressInput = {
+    pagesRead: number;
+    lastPageRead: number;
+  };
+
+  type UpdateProgressInput =
+    | { type: ResourceType.YOUTUBE_VIDEO; data: VideoProgressInput }
+    | { type: ResourceType.YOUTUBE_PLAYLIST; data: PlaylistProgressInput }
+    | { type: ResourceType.PDF; data: PdfProgressInput };
 }
 export {};

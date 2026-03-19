@@ -2,32 +2,32 @@ import { getAuth } from "@/lib/better-auth/auth";
 import { headers } from "next/headers";
 import { NextRequest } from "next/server";
 import mongoose from "mongoose";
-import { createResource, getResourcesByProjectId } from "@/lib/services/resources/resource.service";
+import {
+  createResource,
+  getResourcesByProjectId,
+} from "@/lib/services/resources/resource.service";
 import { createResourceSchema } from "@/lib/validators/resource.validation";
+import { successResponse, errorResponse } from "@/lib/utils/apiResponse";
 
-//create  resource
-
-//create  resource
-// create resource
+// CREATE resource
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return Response.json({ error: "Invalid project ID" }, { status: 400 });
+      return errorResponse("Invalid project ID", 400);
     }
 
     const auth = await getAuth();
-
     const session = await auth.api.getSession({
       headers: await headers(),
     });
 
     if (!session) {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
+      return errorResponse("Unauthorized", 401);
     }
 
     const contentType = req.headers.get("content-type");
@@ -40,10 +40,7 @@ export async function POST(
       const file = formData.get("file") as File;
 
       if (!title || !file) {
-        return Response.json(
-          { error: "Title and file are required" },
-          { status: 400 }
-        );
+        return errorResponse("Title and file are required", 400);
       }
 
       const resource = await createResource(session.user.id, id, {
@@ -52,54 +49,50 @@ export async function POST(
         file,
       });
 
-      return Response.json(resource, { status: 201 });
+      return successResponse(resource, 201);
     }
 
-    // ---------- JSON Resources (Video / Playlist) ----------
+    // ---------- JSON Resources ----------
     const body = await req.json();
-
     const validatedData = createResourceSchema.parse(body);
 
     const resource = await createResource(session.user.id, id, validatedData);
 
-    return Response.json(resource, { status: 201 });
-
+    return successResponse(resource, 201);
   } catch (error: unknown) {
-    if (error instanceof Error) {
-      return Response.json({ error: error.message }, { status: 500 });
-    }
-
-    return Response.json({ error: "Unexpected error" }, { status: 500 });
+    return errorResponse(
+      error instanceof Error ? error.message : "Unexpected error",
+    );
   }
 }
 
-//get resources by project id
-export async function GET( req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }){
-    try {
-       const { id } = await params;
+// GET resources by project ID
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const { id } = await params;
 
-      if(!mongoose.Types.ObjectId.isValid(id)){
-        return Response.json({error:"Invalid project ID"},{status:400});
-      }
-      const auth = await getAuth();
-
-      const session = await auth.api.getSession({
-        headers: await headers(),
-      });
-
-      if (!session) {
-        return Response.json({ error: "Unauthorized" }, { status: 401 });
-      }
-      const resources = await getResourcesByProjectId(session.user.id, id);
-       return Response.json(resources, { status: 201 });
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        return Response.json({ error: error.message }, { status: 500 });
-      }
-
-      return Response.json({ error: "Unexpected error" }, { status: 500 });
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return errorResponse("Invalid project ID", 400);
     }
-  
-  
+
+    const auth = await getAuth();
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session) {
+      return errorResponse("Unauthorized", 401);
+    }
+
+    const resources = await getResourcesByProjectId(session.user.id, id);
+
+    return successResponse(resources, 200);
+  } catch (error: unknown) {
+    return errorResponse(
+      error instanceof Error ? error.message : "Unexpected error",
+    );
+  }
 }

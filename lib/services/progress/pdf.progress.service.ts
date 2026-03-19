@@ -12,7 +12,8 @@ export const updatePdfProgress = async (
     // 1. Get resource (for total pages)
     const resource = await Resource.findById(resourceId)
       .select("pdfData projectId")
-      .lean();
+      .lean()
+      .exec();
 
     if (!resource || !resource.pdfData?.pageCount) {
       throw new Error("Invalid PDF resource");
@@ -20,7 +21,7 @@ export const updatePdfProgress = async (
 
     const totalPages = Math.max(resource.pdfData.pageCount, 1); // Avoid division by zero
     // 2. Get or create progress
-    let progress = await Progress.findOne({ userId, resourceId });
+    let progress = await Progress.findOne({ userId, resourceId }).exec();
      if (!progress) {
        progress = await Progress.create({
          userId,
@@ -30,15 +31,15 @@ export const updatePdfProgress = async (
           status: ProgressStatus.IN_PROGRESS,
          pagesRead: 0,
          lastPageRead: 0,
+         startedAt: new Date(),
        });
      }
       // 3. Prevent invalid input
-  const safePagesRead = Math.max(0, data.pagesRead);
-   const safeLastPage = Math.min(
-  Math.max(0, data.lastPageRead),
-  totalPages
-);
-
+  const safePagesRead = Math.max(0, data.pagesRead ?? 0);
+  const safeLastPage = Math.min(
+    Math.max(0, data.lastPageRead ?? 0),
+    totalPages,
+  );
   // 4. Prevent rollback
   progress.pagesRead = Math.max(progress.pagesRead, safePagesRead);
 
@@ -49,8 +50,9 @@ export const updatePdfProgress = async (
   progress.lastPageRead = safeLastPage;
 
   // 7. Calculate percentage
-  progress.progressPercentage =
-    (progress.pagesRead / totalPages) * 100;
+  progress.progressPercentage = Math.floor(
+    (progress.pagesRead / totalPages) * 100,
+  );
 
 
     
