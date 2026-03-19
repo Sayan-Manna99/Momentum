@@ -11,6 +11,7 @@ import { createVideoResource } from "@/lib/services/resources/video.resource.ser
 import { createPlaylistResource } from "@/lib/services/resources/playList.resource.service";
 import { createPdfResource } from "@/lib/services/resources/pdf.resource.service";
 
+
 type ResourceHandlers = {
   youtube_video: (
     userId: string,

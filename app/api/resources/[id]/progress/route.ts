@@ -10,12 +10,12 @@ import { successResponse, errorResponse } from "@/lib/utils/apiResponse";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ resourceId: string }> },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const { resourceId } = await params;
+    const { id } = await params;
 
-    if (!mongoose.Types.ObjectId.isValid(resourceId)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return errorResponse("Invalid resource ID", 400);
     }
 
@@ -28,7 +28,7 @@ export async function GET(
       return errorResponse("Unauthorized", 401);
     }
 
-    const progress = await getProgressByResource(session.user.id, resourceId);
+    const progress = await getProgressByResource(session.user.id, id);
 
     if (!progress) {
       return successResponse(null, 200, "Progress not started yet");
@@ -44,12 +44,12 @@ export async function GET(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: Promise<{ resourceId: string }> },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const { resourceId } = await params;
+    const { id } = await params;
 
-    if (!mongoose.Types.ObjectId.isValid(resourceId)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return errorResponse("Invalid resource ID", 400);
     }
 
@@ -62,7 +62,7 @@ export async function DELETE(
       return errorResponse("Unauthorized", 401);
     }
 
-    const progress = await resetProgress(session.user.id, resourceId);
+    const progress = await resetProgress(session.user.id, id);
 
     return successResponse(progress, 200, "Progress reset successfully");
   } catch (error: unknown) {

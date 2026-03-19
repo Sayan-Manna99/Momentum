@@ -7,63 +7,73 @@ import {
 import mongoose from "mongoose";
 import { headers } from "next/headers";
 import { NextRequest } from "next/server";
-//get the project by id
+import { successResponse, errorResponse } from "@/lib/utils/apiResponse";
+
+// GET project by ID
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const resolvedParams = await params;
+
     if (!mongoose.Types.ObjectId.isValid(resolvedParams.id)) {
-      return Response.json({ error: "Invalid project ID" }, { status: 400 });
+      return errorResponse("Invalid project ID", 400);
     }
 
     const auth = await getAuth();
     const session = await auth.api.getSession({
       headers: await headers(),
     });
+
     if (!session) {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
+      return errorResponse("Unauthorized", 401);
     }
-    // then call service
+
     const project = await getOneProject(session.user.id, resolvedParams.id);
+
     if (!project) {
-      return Response.json({ error: "Project not found" }, { status: 404 });
+      return errorResponse("Project not found", 404);
     }
-    return Response.json(project);
+
+    return successResponse(project);
   } catch (error: unknown) {
-    if (error instanceof Error) {
-      return Response.json({ error: error.message }, { status: 400 });
-    }
-    return Response.json({ error: "Unexpected error" }, { status: 400 });
+    return errorResponse(
+      error instanceof Error ? error.message : "Unexpected error",
+      400,
+    );
   }
 }
 
-//update the project
+// PATCH project
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const resolvedParams = await params;
+
     if (!mongoose.Types.ObjectId.isValid(resolvedParams.id)) {
-      return Response.json({ error: "Invalid project ID" }, { status: 400 });
+      return errorResponse("Invalid project ID", 400);
     }
 
     const auth = await getAuth();
     const session = await auth.api.getSession({
       headers: await headers(),
     });
+
     if (!session) {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
+      return errorResponse("Unauthorized", 401);
     }
-    //call the data
+
     const data = await req.json();
+
     const updatedData = {
       title: data.title,
       description: data.description,
       status: data.status,
     };
+
     const updatedProject = await updateOneProject(
       session.user.id,
       resolvedParams.id,
@@ -71,27 +81,19 @@ export async function PATCH(
     );
 
     if (!updatedProject) {
-      return Response.json(
-        { error: "Project not found or update failed" },
-        { status: 404 },
-      );
+      return errorResponse("Project not found or update failed", 404);
     }
-    return Response.json(
-      {
-        message: "Project updated successfully",
-        project: updatedProject,
-      },
-      { status: 200 },
-    );
+
+    return successResponse(updatedProject, 200, "Project updated successfully");
   } catch (error: unknown) {
-    if (error instanceof Error) {
-      return Response.json({ error: error.message }, { status: 400 });
-    }
-    return Response.json({ error: "Unexpected error" }, { status: 400 });
+    return errorResponse(
+      error instanceof Error ? error.message : "Unexpected error",
+      400,
+    );
   }
 }
 
-//delete the project
+// DELETE project
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -100,7 +102,7 @@ export async function DELETE(
     const { id } = await params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return Response.json({ error: "Invalid project ID" }, { status: 400 });
+      return errorResponse("Invalid project ID", 400);
     }
 
     const auth = await getAuth();
@@ -109,24 +111,19 @@ export async function DELETE(
     });
 
     if (!session) {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
+      return errorResponse("Unauthorized", 401);
     }
 
     const deleted = await deleteOneProject(session.user.id, id);
 
     if (!deleted) {
-      return Response.json({ error: "Project not found" }, { status: 404 });
+      return errorResponse("Project not found", 404);
     }
 
-    return Response.json(
-      { message: "Project deleted successfully" },
-      { status: 200 },
-    );
+    return successResponse(null, 200, "Project deleted successfully");
   } catch (error: unknown) {
-    if (error instanceof Error) {
-      return Response.json({ error: error.message }, { status: 500 });
-    }
-
-    return Response.json({ error: "Unexpected error" }, { status: 500 });
+    return errorResponse(
+      error instanceof Error ? error.message : "Unexpected error",
+    );
   }
 }

@@ -8,8 +8,9 @@ import {
   updateResourceById,
 } from "@/lib/services/resources/resource.service";
 import { updateResourceSchema } from "@/lib/validators/resource.validation";
+import { successResponse, errorResponse } from "@/lib/utils/apiResponse";
 
-//get single resource by id
+// GET single resource
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -18,37 +19,33 @@ export async function GET(
     const { id } = await params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return Response.json({ error: "Invalid resource ID" }, { status: 400 });
+      return errorResponse("Invalid resource ID", 400);
     }
 
     const auth = await getAuth();
-
     const session = await auth.api.getSession({
       headers: await headers(),
     });
 
     if (!session) {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
+      return errorResponse("Unauthorized", 401);
     }
 
     const resource = await getResourceById(session.user.id, id);
 
     if (!resource) {
-      return Response.json({ error: "Resource not found" }, { status: 404 });
+      return errorResponse("Resource not found", 404);
     }
 
-    return Response.json(resource, { status: 200 });
+    return successResponse(resource);
   } catch (error: unknown) {
-    if (error instanceof Error) {
-      return Response.json({ error: error.message }, { status: 500 });
-    }
-
-    return Response.json({ error: "Unexpected error" }, { status: 500 });
+    return errorResponse(
+      error instanceof Error ? error.message : "Unexpected error",
+    );
   }
 }
 
-//Update resource by id
-
+// PATCH resource
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -57,21 +54,19 @@ export async function PATCH(
     const { id } = await params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return Response.json({ error: "Invalid resource ID" }, { status: 400 });
+      return errorResponse("Invalid resource ID", 400);
     }
 
     const auth = await getAuth();
-
     const session = await auth.api.getSession({
       headers: await headers(),
     });
 
     if (!session) {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
+      return errorResponse("Unauthorized", 401);
     }
 
     const body = await req.json();
-
     const validatedData = updateResourceSchema.parse(body);
 
     const updatedResource = await updateResourceById(
@@ -81,21 +76,22 @@ export async function PATCH(
     );
 
     if (!updatedResource) {
-      return Response.json({ error: "Resource not found" }, { status: 404 });
+      return errorResponse("Resource not found", 404);
     }
 
-    return Response.json(updatedResource, { status: 200 });
+    return successResponse(
+      updatedResource,
+      200,
+      "Resource updated successfully",
+    );
   } catch (error: unknown) {
-    if (error instanceof Error) {
-      return Response.json({ error: error.message }, { status: 500 });
-    }
-
-    return Response.json({ error: "Unexpected error" }, { status: 500 });
+    return errorResponse(
+      error instanceof Error ? error.message : "Unexpected error",
+    );
   }
 }
 
-//delete resource by id
-
+// DELETE resource
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -104,36 +100,28 @@ export async function DELETE(
     const { id } = await params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return Response.json({ error: "Invalid resource ID" }, { status: 400 });
+      return errorResponse("Invalid resource ID", 400);
     }
 
     const auth = await getAuth();
-
     const session = await auth.api.getSession({
       headers: await headers(),
     });
 
     if (!session) {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
+      return errorResponse("Unauthorized", 401);
     }
-    const deletedResource = await deleteResourceById(
-      session.user.id,
-      id,
-    );
 
-  if (!deletedResource) {
-    return Response.json({ error: "Resource not found" }, { status: 404 });
-  }
+    const deletedResource = await deleteResourceById(session.user.id, id);
 
-  return Response.json(
-    { message: "Resource deleted successfully" },
-    { status: 200 },
-  );
+    if (!deletedResource) {
+      return errorResponse("Resource not found", 404);
+    }
+
+    return successResponse(null, 200, "Resource deleted successfully");
   } catch (error: unknown) {
-    if (error instanceof Error) {
-      return Response.json({ error: error.message }, { status: 500 });
-    }
-
-    return Response.json({ error: "Unexpected error" }, { status: 500 });
+    return errorResponse(
+      error instanceof Error ? error.message : "Unexpected error",
+    );
   }
 }

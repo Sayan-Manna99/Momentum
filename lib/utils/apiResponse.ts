@@ -1,5 +1,12 @@
-export const successResponse = <T>(data: T, status = 200) => {
-  return Response.json({ success: true, data }, { status });
+export const successResponse = <T>(data: T, status = 200, message?: string) => {
+  return Response.json(
+    {
+      success: true,
+      data,
+      ...(message && { message }),
+    },
+    { status },
+  );
 };
 
 export const errorResponse = (message: string, status = 500) => {

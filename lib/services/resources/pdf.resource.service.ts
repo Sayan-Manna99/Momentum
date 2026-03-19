@@ -1,6 +1,7 @@
 import Resource from "@/lib/db/models/Resource.model";
 import { uploadPdf } from "@/lib/utils/uploadPdf";
 import { PDFDocument } from "pdf-lib";
+import { updateProjectStats } from "../project.servise";
 
 type CreatePdfResourceData = {
   title: string;
@@ -43,7 +44,7 @@ export const createPdfResource = async (
       },
       tags: [],
     });
-
+    await updateProjectStats(projectId, userId);
     return resource;
   } catch (error) {
     console.error("Error creating PDF resource:", error);
