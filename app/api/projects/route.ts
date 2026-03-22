@@ -45,7 +45,10 @@ export async function GET() {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
     const projects = await getProjectsByUserId(session.user.id);
-    return Response.json(projects, { status: 200 });
+     return Response.json(projects, {
+       status: 200,
+      
+     });
   } catch (error: unknown) {
     if (error instanceof Error) {
       return Response.json({ error: error.message }, { status: 400 });

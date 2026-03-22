@@ -11,6 +11,12 @@ export const createProjectSchema = z.object({
     .min(10, "Description must be at least 10 characters")
     .max(250, "Description must be at most 250 characters")
     .optional(),
+  targetEndDate: z
+    .string()
+    .optional()
+    .refine((date) => !date || !isNaN(Date.parse(date)), {
+      message: "Invalid date",
+    }),
   status: z.enum(["planning", "in_progress", "completed"]).optional(),
 });
 

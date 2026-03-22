@@ -70,14 +70,7 @@ const ProjectSchema = new Schema(
     targetEndDate: Date,
     actualEndDate: Date,
 
-    // Resources linked to this project
-    // resourceIds: [
-    //   {
-    //     type: Schema.Types.ObjectId,
-    //     ref: "Resource",
-    //   },
-    // ],
-
+   
     // Statistics (calculated)
     stats: {
       totalResources: {
@@ -143,7 +136,11 @@ ProjectSchema.index({ userId: 1, isPinned: -1, order: 1 });
 ProjectSchema.virtual("isCompleted").get(function () {
   return this.status === ProjectStatus.COMPLETED;
 });
-
+// Virtual for overdue status
+ProjectSchema.virtual("isOverdue").get(function () {
+  if (!this.targetEndDate) return false;
+  return new Date() > this.targetEndDate && this.status !== "completed";
+});
 // Method to update stats
 ProjectSchema.methods.updateStats = async function () {
   const Resource = models.Resource || model("Resource");
