@@ -17,7 +17,7 @@ export const ProjectCard = ({ project }: any) => {
   };
   return (
     <Link href={`/dashboard/projects/${project._id}`}>
-      <Card className="bg-neutral-400/20 hover:bg-neutral-400/30 transition-colors text-neutral-300 backdrop-blur-[1px] border border-neutral-400/20 w-100">
+      <Card className="bg-neutral-400/20 hover:bg-neutral-400/30 transition-colors text-neutral-300 backdrop-blur-[1px] border border-neutral-400/20 w-full">
         <CardContent className="p-4 space-y-4">
           {/* 🔹 Title + Description */}
           <div>
@@ -62,8 +62,8 @@ export const ProjectCard = ({ project }: any) => {
             <ProgressBar value={project.stats.progressPercentage ?? 0} />
 
             <p className="text-xs text-gray-400">
-              {project.stats.completedResources || 0} of {project.stats.totalResources   || 0}{" "}
-              resources completed
+              {project.stats.completedResources || 0} of{" "}
+              {project.stats.totalResources || 0} resources completed
             </p>
           </div>
 
@@ -71,24 +71,33 @@ export const ProjectCard = ({ project }: any) => {
           <div className="flex justify-between items-center text-xs text-gray-400 pt-2 border-t border-white/10">
             <div className="flex items-center gap-1">
               <Calendar size={14} />
-              <span>Due {project.targetEndDate || "N/A"}</span>
+              <span>
+                Due{" "}
+                {project.targetEndDate
+                  ? new Date(project.targetEndDate).toLocaleDateString()
+                  : "N/A"}
+              </span>
             </div>
 
             {/* Future: edit/delete */}
             <div className="flex gap-2 opacity-70">
-              <Button onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onDelete();
-              }}>
-                <Trash2 size={14} />
-              </Button>
-              <Button onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onEdit();
-              }}>
+              <Button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onEdit();
+                }}
+              >
                 <Pencil size={14} />
+              </Button>
+              <Button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onDelete();
+                }}
+              >
+                <Trash2 size={14} />
               </Button>
             </div>
           </div>
