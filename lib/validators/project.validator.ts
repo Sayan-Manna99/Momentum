@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ProjectStatus } from "../db/models/Project.model";
+
 
 export const createProjectSchema = z.object({
   title: z
@@ -13,17 +13,33 @@ export const createProjectSchema = z.object({
     .optional(),
   targetEndDate: z
     .string()
-    .optional()
     .refine((date) => !date || !isNaN(Date.parse(date)), {
       message: "Invalid date",
-    }),
+    })
+    .refine(
+      (date) => {
+        if (!date) return true;
+
+        const inputDate = new Date(date);
+        const today = new Date();
+
+        // normalize both to midnight
+        today.setHours(0, 0, 0, 0);
+        inputDate.setHours(0, 0, 0, 0);
+
+        return inputDate >= today;
+      },
+      {
+        message: "Date cannot be in the past",
+      },
+    ),
   status: z.enum(["planning", "in_progress", "completed"]).optional(),
 });
 
 export const updateProjectSchema = z.object({
   title: z.string().min(3).optional(),
   description: z.string().optional(),
-  status: z.enum(ProjectStatus).optional(),
+  status: z.enum(["planning", "in_progress", "completed"]).optional(),
 });
 export type CreateProjectData = z.infer<typeof createProjectSchema>;
 export type UpdateProjectData = z.infer<typeof updateProjectSchema>;

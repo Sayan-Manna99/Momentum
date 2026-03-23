@@ -25,6 +25,7 @@ declare global {
     validation?: RegisterOptions;
     disabled?: boolean;
     value?: string;
+    className?: string;
   };
   type FooterLinkProps = {
     text: string;
@@ -133,5 +134,11 @@ declare global {
 
   isOverdue: boolean;
 };
+
+  type FormData = {
+    title: string;
+    description?: string;
+    targetEndDate?: string;
+  };
 }
 export {};

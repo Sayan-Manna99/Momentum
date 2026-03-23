@@ -30,5 +30,6 @@ export const useProjects = () => {
     projects,
     loading,
     refetch: fetchProjects,
+    setProjects
   };
 };

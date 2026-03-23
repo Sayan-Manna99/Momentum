@@ -5,17 +5,47 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ProgressBar } from "./ProgressBar";
 import { Calendar, FileText, ListVideo, Video,Pencil,Trash2 } from "lucide-react";
 import { Button } from "../ui/button";
+import axios from "axios";
+import { toast } from "sonner";
+import { useState } from "react";
 
-export const ProjectCard = ({ project }: any) => {
+import { EditProjectDialog } from "./EditProjectDialog";
+
+
+export const ProjectCard = ({
+  project,
+  setProjects,
+}: {
+  project: Project;
+  setProjects: React.Dispatch<React.SetStateAction<Project[]>>;
+}) => {
+  const [openEdit, setOpenEdit] = useState(false);
   const onEdit = () => {
-    // Future: Implement edit functionality
-    alert("Edit functionality coming soon!");
+   try {
+      setOpenEdit(true);
+      toast.success("Project edited successfully");
+   } catch (error) {
+      console.error("Failed to edit project", error);
+      toast.error("Failed to edit project");
+   }
   };
-  const onDelete = () => {
-    // Future: Implement delete functionality
-    alert("Delete functionality coming soon!");
+  const onDelete = async () => {
+    try {
+      const response = await axios.delete(`/api/projects/${project._id}`);
+      if (!response.data.success) {
+        toast.error(response.data.message || "Failed to delete project");
+        return;
+      }
+      // Remove the deleted project from the list
+      setProjects((prev) => prev.filter((p) => p._id !== project._id));
+      toast.success("Project deleted successfully");
+    } catch (error) {
+      console.error("Failed to delete project", error);
+      toast.error("Failed to delete project");
+    }
   };
   return (
+    <>
     <Link href={`/dashboard/projects/${project._id}`}>
       <Card className="bg-neutral-400/20 hover:bg-neutral-400/30 transition-colors text-neutral-300 backdrop-blur-[1px] border border-neutral-400/20 w-full">
         <CardContent className="p-4 space-y-4">
@@ -32,23 +62,23 @@ export const ProjectCard = ({ project }: any) => {
           {/* 🔹 Meta Row */}
           <div className="flex items-center gap-4 text-sm text-gray-400">
             <div className="flex items-center gap-1">
-              <Video size={14} />
-              <span>{project.resourceStats.video || 0}</span>
+              <Video className="text-red-500" size={14} />
+              <span>{project.resourceStats?.video || 0}</span>
             </div>
 
             <div className="flex items-center gap-1">
-              <ListVideo size={14} />
-              <span>{project.resourceStats.playlist || 0}</span>
+              <ListVideo className="text-purple-500" size={14} />
+              <span>{project.resourceStats?.playlist || 0}</span>
             </div>
 
             <div className="flex items-center gap-1">
-              <FileText size={14} />
-              <span>{project.resourceStats.pdf || 0}</span>
+              <FileText className="text-green-500" size={14} />
+              <span>{project.resourceStats?.pdf || 0}</span>
             </div>
 
             {/* Optional badge */}
             {project.isOverdue && (
-              <span className="text-red-400 text-xs">Overdue</span>
+              <span className="text-red-600 text-xs">Overdue</span>
             )}
           </div>
 
@@ -78,7 +108,7 @@ export const ProjectCard = ({ project }: any) => {
                   : "N/A"}
               </span>
             </div>
-
+            
             {/* Future: edit/delete */}
             <div className="flex gap-2 opacity-70">
               <Button
@@ -88,7 +118,7 @@ export const ProjectCard = ({ project }: any) => {
                   onEdit();
                 }}
               >
-                <Pencil size={14} />
+                <Pencil className="text-blue-500" size={14} />
               </Button>
               <Button
                 onClick={(e) => {
@@ -97,12 +127,21 @@ export const ProjectCard = ({ project }: any) => {
                   onDelete();
                 }}
               >
-                <Trash2 size={14} />
+                <Trash2 className="text-red-500" size={14} />
               </Button>
             </div>
           </div>
         </CardContent>
       </Card>
     </Link>
+    {openEdit && (
+              <EditProjectDialog
+                project={project}
+                setOpen={setOpenEdit}
+                setProjects={setProjects}
+              />
+            )}
+
+        </>
   );
 };
