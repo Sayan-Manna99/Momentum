@@ -25,6 +25,7 @@ declare global {
     validation?: RegisterOptions;
     disabled?: boolean;
     value?: string;
+    className?: string;
   };
   type FooterLinkProps = {
     text: string;
@@ -76,7 +77,7 @@ declare global {
     lastWatchedAt?: Date;
   };
 
-  // ---------------- TYPES ----------------
+  
 
   type VideoProgressInput = {
     position: number;
@@ -97,5 +98,47 @@ declare global {
     | { type: ResourceType.YOUTUBE_VIDEO; data: VideoProgressInput }
     | { type: ResourceType.YOUTUBE_PLAYLIST; data: PlaylistProgressInput }
     | { type: ResourceType.PDF; data: PdfProgressInput };
+
+  type Project = {
+    _id: string;
+    userId: string;
+
+    title: string;
+    description?: string;
+
+    tags: string[];
+    color: string;
+
+    status: "planning" | "in_progress" | "on_hold" | "completed" | "archived";
+
+    order: number;
+    isPinned: boolean;
+    isFavorite: boolean;
+
+    targetEndDate: string | null;
+
+    createdAt: string;
+    updatedAt: string;
+
+    stats: {
+      totalResources: number;
+      completedResources: number;
+      progressPercentage: number;
+  };
+
+  resourceStats: {
+    video: number;
+    playlist: number;
+    pdf: number;
+  };
+
+  isOverdue: boolean;
+};
+
+  type FormData = {
+    title: string;
+    description?: string;
+    targetEndDate?: string;
+  };
 }
 export {};
