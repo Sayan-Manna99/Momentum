@@ -140,5 +140,20 @@ declare global {
     description?: string;
     targetEndDate?: string;
   };
+  type Resource = {
+    _id: string;
+    projectId: string;
+    title: string;
+    type: "youtube_video" | "youtube_playlist" | "pdf";
+
+    url?: string;
+
+    totalDuration?: number;
+    pdfData?: {
+      pageCount?: number;
+    };
+
+    progressPercentage?: number;
+  };
 }
 export {};

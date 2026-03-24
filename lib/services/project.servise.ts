@@ -67,13 +67,21 @@ export const getProjectsByUserId = async (userId: string) => {
         else if (r.type === "pdf") resourceStats.pdf++;
       }
 
-      const isOverdue =
-        project.targetEndDate &&
-        !isNaN(new Date(project.targetEndDate).getTime()) &&
-        new Date() > new Date(project.targetEndDate) &&
-        project.status !== "completed";
-      console.log("isOverdue:", isOverdue);
-      // FIXED: Properly serialize all fields
+   let isOverdue = false;
+
+   if (project.targetEndDate) {
+     const targetDate = new Date(project.targetEndDate);
+     const today = new Date();
+
+     today.setHours(0, 0, 0, 0);
+     targetDate.setHours(0, 0, 0, 0);
+
+     isOverdue =
+       !isNaN(targetDate.getTime()) &&
+       today > targetDate &&
+       project.status !== "completed";
+   }
+    
       return {
         _id: project._id.toString(), // Convert ObjectId to string
         userId: project.userId,
@@ -100,7 +108,7 @@ export const getProjectsByUserId = async (userId: string) => {
         },
         
         resourceStats: resourceStats,
-        isOverdue: !!isOverdue,
+        isOverdue: isOverdue,
       };
     }),
   );

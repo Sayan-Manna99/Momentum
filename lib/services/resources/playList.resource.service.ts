@@ -29,7 +29,7 @@ export const createPlaylistResource = async (
     throw new Error("Playlist already exists in this project");
   }
 
-  // ✅ NEW: Fetch videos + durations
+  //  NEW: Fetch videos + durations
   const videoIds = await getPlaylistVideos(youtubeData.playlistId);
 
   const durations = await getMultipleVideoDurations(videoIds);

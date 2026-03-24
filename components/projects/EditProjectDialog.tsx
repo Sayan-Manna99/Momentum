@@ -8,13 +8,13 @@ import {
 } from "@/lib/validators/project.validator";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+
 
 export const EditProjectDialog = ({ project, setOpen, setProjects }: any) => {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: {  isSubmitting },
   } = useForm<CreateProjectData>({
     resolver: zodResolver(createProjectSchema),
 
@@ -46,7 +46,7 @@ export const EditProjectDialog = ({ project, setOpen, setProjects }: any) => {
     <div className="fixed inset-0 bg-gray-500/60  flex items-center justify-center z-50">
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="bg-neutral-800 p-6 rounded-xl w-[400px] space-y-4"
+        className="bg-neutral-800 p-6 rounded-xl w-100 space-y-4"
       >
         <h2 className="text-lg font-semibold">Edit Project</h2>
 

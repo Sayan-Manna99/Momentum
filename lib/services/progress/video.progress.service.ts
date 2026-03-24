@@ -23,7 +23,7 @@ export const updateVideoProgress = async (
     resourceId,
   }).exec();
 
-  // 🔥 CREATE CASE (FIXED)
+  // CREATE CASE (FIXED)
   if (!progress) {
     const clampedPosition =
       totalDuration > 0 ? Math.min(safePosition, totalDuration) : safePosition;
@@ -41,7 +41,7 @@ export const updateVideoProgress = async (
       status: ProgressStatus.IN_PROGRESS,
       watchedDuration: clampedPosition,
       lastWatchedPosition: clampedPosition,
-      progressPercentage, // ✅ FIX
+      progressPercentage, 
       watchCount: 1,
       startedAt: new Date(),
       lastAccessedAt: new Date(),

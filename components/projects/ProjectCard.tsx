@@ -23,7 +23,7 @@ export const ProjectCard = ({
   const onEdit = () => {
    try {
       setOpenEdit(true);
-      toast.success("Project edited successfully");
+      
    } catch (error) {
       console.error("Failed to edit project", error);
       toast.error("Failed to edit project");
@@ -46,7 +46,7 @@ export const ProjectCard = ({
   };
   return (
     <>
-    <Link href={`/dashboard/projects/${project._id}`}>
+    <Link href={`/projects/${project._id}`}>
       <Card className="bg-neutral-400/20 hover:bg-neutral-400/30 transition-colors text-neutral-300 backdrop-blur-[1px] border border-neutral-400/20 w-full">
         <CardContent className="p-4 space-y-4">
           {/* 🔹 Title + Description */}
