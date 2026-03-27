@@ -150,6 +150,7 @@ declare global {
     playlistId: string;
     videos: {
       videoId: string;
+      duration:number
     }[];
   };
   type Resource = {

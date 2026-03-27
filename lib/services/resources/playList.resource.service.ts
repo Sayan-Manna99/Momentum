@@ -1,20 +1,14 @@
-import Resource from "@/lib/db/models/Resource.model";
-import { extractYoutubeData } from "@/lib/utils/youTube";
+import Resource, { ResourceType } from "@/lib/db/models/Resource.model";
+import { extractYoutubeData, getMultipleVideoDurations, getPlaylistVideos } from "@/lib/utils/youTube";
 import { updateProjectStats } from "../project.servise";
-import {
-  getPlaylistVideos,
-  getMultipleVideoDurations,
-} from "@/lib/utils/youTube";
-import { ResourceType } from "@/lib/db/models/Resource.model";
 
 export const createPlaylistResource = async (
   userId: string,
   projectId: string,
   data: CreatePlaylistResourceData,
 ) => {
- 
   const youtubeData = extractYoutubeData(data.url);
-  
+
   if (!youtubeData || !youtubeData.playlistId) {
     throw new Error("Invalid YouTube playlist URL");
   }
@@ -40,25 +34,24 @@ export const createPlaylistResource = async (
     console.error("❌ Failed to fetch playlist videos:", error);
   }
 
-  // 🔥 Fetch durations
-  const durations = await getMultipleVideoDurations(videoIds);
-
-  const totalDuration = durations.reduce(
-    (sum: number, d: number) => sum + d,
-    0,
-  );
   if (!videoIds || videoIds.length === 0) {
-    console.warn("⚠️ Using fallback video");
-    videoIds = ["dQw4w9WgXcQ"]; // default safe video
+    throw new Error("No videos found in playlist");
   }
-  // 🔥 Build videos array safely
+
+  // 🔥 Fetch durations (NOW RETURNS MAP)
+  const durationMap = await getMultipleVideoDurations(videoIds);
+
+  // 🔥 Build videos array (CORRECT WAY)
   const videos = videoIds.map((id) => ({
     videoId: id,
+    duration: durationMap[id] ?? 0,
   }));
+
+  // 🔥 Correct total duration
+  const totalDuration = videos.reduce((sum, v) => sum + (v.duration || 0), 0);
 
   console.log("MAPPED VIDEOS:", videos);
 
-  // 🔥 Create payload FIRST (debuggable)
   const payload = {
     userId,
     projectId,
@@ -66,7 +59,7 @@ export const createPlaylistResource = async (
     type: ResourceType.YOUTUBE_PLAYLIST,
     youtubeData: {
       playlistId: youtubeData.playlistId,
-      videos, // THIS MUST BE PRESENT
+      videos,
     },
     videoCount: videoIds.length,
     totalDuration,
@@ -75,12 +68,7 @@ export const createPlaylistResource = async (
 
   console.log("FINAL PAYLOAD:", JSON.stringify(payload, null, 2));
 
-  // 🔥 Save
   const resource = await Resource.create(payload);
-
-  // 🔥 EXTRA SAFETY (important for nested arrays)
-  resource.markModified("youtubeData");
-  await resource.save();
 
   await updateProjectStats(projectId, userId);
 

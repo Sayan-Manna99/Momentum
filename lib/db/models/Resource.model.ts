@@ -59,6 +59,7 @@ const ResourceSchema = new Schema(
       videos: [
         {
           videoId: String,
+          duration:Number
         },
       ],
       channelId: String,

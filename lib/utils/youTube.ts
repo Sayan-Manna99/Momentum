@@ -99,12 +99,11 @@ export const getPlaylistVideos = async (
 };
 export const getMultipleVideoDurations = async (
   videoIds: string[],
-): Promise<number[]> => {
-  if (videoIds.length === 0) return [];
+): Promise<Record<string, number>> => {
+  if (videoIds.length === 0) return {};
 
-  const durations: number[] = [];
+  const durationMap: Record<string, number> = {};
 
-  // YouTube allows max 50 IDs per request
   for (let i = 0; i < videoIds.length; i += 50) {
     const chunk = videoIds.slice(i, i + 50);
 
@@ -122,13 +121,21 @@ export const getMultipleVideoDurations = async (
     const items = res.data.items || [];
 
     for (const item of items) {
+      const id = item.id;
       const iso = item.contentDetails?.duration;
 
-      if (iso) {
-        durations.push(convertISOToSeconds(iso));
+      if (id && iso) {
+        durationMap[id] = convertISOToSeconds(iso);
       }
     }
   }
 
-  return durations;
+  return durationMap;
+};
+
+export const formatDuration = (duration: number) => {
+  const minutes = Math.floor(duration / 60);
+  const hours = Math.floor(minutes / 60);
+  const seconds = duration % 60;
+  return `${hours}h ${minutes % 60}m ${seconds}s`;
 };
