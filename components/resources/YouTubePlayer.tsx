@@ -18,12 +18,14 @@ export const YoutubePlayer = ({
   initialTime = 0,
   onEnd,
   onProgressUpdate,
+  playlistMode,
 }: {
   videoId: string;
   resourceId: string;
   initialTime?: number;
   onEnd?: () => void;
-  onProgressUpdate?: (progress: any) => void; // ✅ FIXED TYPE
+  onProgressUpdate?: (progress: any) => void; 
+  playlistMode?: boolean;
 }) => {
   const playerRef = useRef<any>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -91,15 +93,33 @@ export const YoutubePlayer = ({
         lastSentRef.current = currentTime;
 
         try {
-          const res = await axios.patch(`/api/progress`, {
-            position: currentTime,
+
+          // const res = await axios.patch(`/api/progress`, {
+          //   position: currentTime,
+          //   resourceId,
+          // });
+
+          // const progress = res.data.data;
+
+          // console.log("PATCH SUCCESS:", progress);
+          const videoData = playerRef.current.getVideoData();
+
+          const payload = {
             resourceId,
-          });
+            position: currentTime,
+            ...(playlistMode && {
+              videoId: videoData.video_id,
+              duration: playerRef.current.getDuration(),
+            }),
+          };
+
+          const res = await axios.patch(`/api/progress`, payload);
 
           const progress = res.data.data;
 
-          console.log("PATCH SUCCESS:", progress);
+          onProgressUpdate?.(progress);
 
+          console.log("PATCH SUCCESS:", progress);
         } catch (err) {
           console.error("Progress update failed:", err);
         }

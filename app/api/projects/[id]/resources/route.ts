@@ -59,9 +59,16 @@ export async function POST(
     const resource = await createResource(session.user.id, id, validatedData);
 
     return successResponse(resource, 201);
-  } catch (error: unknown) {
-    return errorResponse(
-      error instanceof Error ? error.message : "Unexpected error",
+  } catch (error: any) {
+    console.error("🔥 BACKEND ERROR:", error);
+    console.error("🔥 STACK:", error?.stack);
+
+    return Response.json(
+      {
+        success: false,
+        message: error.message || "Internal Server Error",
+      },
+      { status: 500 },
     );
   }
 }

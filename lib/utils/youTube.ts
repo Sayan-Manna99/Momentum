@@ -3,16 +3,34 @@ import axios from "axios";
 export function extractYoutubeData(url: string) {
   const parsed = new URL(url);
 
-  const videoId = parsed.searchParams.get("v");
-  const playlistId = parsed.searchParams.get("list");
+  let videoId: string | null = null;
+  let playlistId: string | null = null;
 
-  return {
-    videoId,
-    playlistId,
-  };
+  // Standard: youtube.com/watch?v=ID
+  videoId = parsed.searchParams.get("v");
+
+  // Short: youtu.be/ID
+  if (!videoId && parsed.hostname === "youtu.be") {
+    videoId = parsed.pathname.slice(1); // remove leading /
+  }
+
+  // Shorts: youtube.com/shorts/ID
+  if (!videoId && parsed.pathname.startsWith("/shorts/")) {
+    videoId = parsed.pathname.split("/shorts/")[1].split("/")[0];
+  }
+
+  // Embed: youtube.com/embed/ID
+  if (!videoId && parsed.pathname.startsWith("/embed/")) {
+    videoId = parsed.pathname.split("/embed/")[1].split("/")[0];
+  }
+
+  playlistId = parsed.searchParams.get("list");
+
+  return { videoId, playlistId };
 }
 
 const API_KEY = process.env.YOUTUBE_API_KEY!;
+console.log("YT KEY:", process.env.YOUTUBE_API_KEY);
 export const getVideoDetails = async (videoId: string) => {
   const res = await axios.get("https://www.googleapis.com/youtube/v3/videos", {
     params: {

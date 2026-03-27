@@ -9,7 +9,7 @@ export const updatePlaylistProgress = async (
   data: PlaylistProgressInput,
 ) => {
   try {
-    // ✅ 0. VALIDATION (CRITICAL)
+    
     if (!data.videoId) {
       throw new Error("videoId is required");
     }
@@ -18,7 +18,7 @@ export const updatePlaylistProgress = async (
       throw new Error("position is required");
     }
 
-    // ✅ 1. Extract clean videoId
+   
     const extracted = extractYoutubeData(data.videoId);
     const videoId = extracted?.videoId || data.videoId;
 
@@ -49,12 +49,12 @@ export const updatePlaylistProgress = async (
       });
     }
 
-    // 4. Find video
+    //  Find video
     let video = progress.videoProgress.find(
       (v: VideoProgressItem) => v.videoId === videoId,
     );
 
-    // 5. Create if not exists
+    //  Create if not exists
     if (!video) {
       video = {
         videoId,
@@ -68,25 +68,25 @@ export const updatePlaylistProgress = async (
       progress.videoProgress.push(video as VideoProgressItem);
     }
 
-    // ✅ 6. Safe position (NOW GUARANTEED)
+   
     const safePosition = Math.max(0, data.position);
 
-    // 7. Prevent rollback
+    // Prevent rollback
     video.watchedDuration = Math.max(video.watchedDuration, safePosition);
 
-    // 8. Clamp
+    //  Clamp
     video.watchedDuration = Math.min(video.watchedDuration, video.duration);
 
-    // 9. Update position
+    //  Update position
     video.lastPosition = safePosition;
     video.lastWatchedAt = new Date();
 
-    // 10. Completion per video
+    //  Completion per video
     if (video.duration > 0 && video.watchedDuration / video.duration >= 0.95) {
       video.completed = true;
     }
 
-    // 11. Playlist progress
+    //  Playlist progress
     const totalDuration = progress.videoProgress.reduce(
       (acc: number, v: VideoProgressItem) => acc + v.duration,
       0,

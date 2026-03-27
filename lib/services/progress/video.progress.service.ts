@@ -41,11 +41,18 @@ export const updateVideoProgress = async (
       status: ProgressStatus.IN_PROGRESS,
       watchedDuration: clampedPosition,
       lastWatchedPosition: clampedPosition,
-      progressPercentage, 
+      progressPercentage,
       watchCount: 1,
       startedAt: new Date(),
       lastAccessedAt: new Date(),
     });
+
+    if (resource.projectId) {
+      await updateProjectStats(resource.projectId, userId);
+      console.log(
+        `Updated project stats for project ${resource.projectId} after creating video progress`,
+      );
+    }
 
     return progress;
   }
@@ -65,24 +72,33 @@ export const updateVideoProgress = async (
     progress.watchCount += 1;
   }
 
-  // ✅ ALWAYS calculate
   progress.progressPercentage =
     totalDuration > 0
       ? Math.min(100, Math.floor((clampedPosition / totalDuration) * 100))
       : 0;
 
-  if (progress.progressPercentage >= 95 && !progress.completedAt) {
+  if (progress.progressPercentage >= 95) {
     progress.status = ProgressStatus.COMPLETED;
-    progress.completedAt = new Date();
 
-    if (resource.projectId) {
-      await updateProjectStats(resource.projectId, userId);
+    if (!progress.completedAt) {
+      progress.completedAt = new Date();
     }
   } else {
     progress.status = ProgressStatus.IN_PROGRESS;
   }
 
   await progress.save();
-
+  console.log("🎯 CALLING updateProjectStats", {
+    projectId: resource.projectId,
+    userId,
+    percentage: progress.progressPercentage,
+  });
+  if (resource.projectId) {
+    await updateProjectStats(resource.projectId, userId);
+    console.log(
+      `Updated project stats for project ${resource.projectId} after video progress update`,
+    );
+  }
+ 
   return progress;
 };

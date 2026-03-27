@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { YoutubePlayer } from "@/components/resources/YouTubePlayer";
 import { extractYoutubeData } from "@/lib/utils/youTube";
+import { PlaylistView } from "@/components/resources/PlyListView";
 
 type Params = Promise<{ id: string }>;
 
@@ -12,13 +13,7 @@ export default function ResourcePage({ params }: { params: Params }) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [resourceId, setResourceId] = useState<string | null>(null);
-  const handleProgressUpdate = (progress: any) => {
-      setResource((prev: any) => ({
-        ...prev,
-        progressPercentage: progress.progressPercentage,
-        lastWatchedPosition: progress.lastWatchedPosition,
-      }));
-    };
+  
   useEffect(() => {
     const loadResource = async () => {
       try {
@@ -69,7 +64,19 @@ export default function ResourcePage({ params }: { params: Params }) {
       </div>
     );
   }
+  if (resource.type === "youtube_playlist") {
+    return (
+      <div className="min-h-screen bg-gray-950 p-8">
+        <div className="max-w-6xl mx-auto">
+          <h1 className="text-3xl font-bold text-white mb-6">
+            {resource.title}
+          </h1>
 
+          <PlaylistView resource={resource} />
+        </div>
+      </div>
+    );
+  }
   // Better data extraction based on resource type
   let videoId: string | null = null;
 
