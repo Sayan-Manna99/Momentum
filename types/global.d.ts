@@ -140,6 +140,18 @@ declare global {
     description?: string;
     targetEndDate?: string;
   };
+
+  type YoutubeVideoData = {
+    videoId: string;
+  };
+
+
+  type YoutubePlaylistData = {
+    playlistId: string;
+    videos: {
+      videoId: string;
+    }[];
+  };
   type Resource = {
     _id: string;
     projectId: string;
@@ -147,8 +159,10 @@ declare global {
     type: "youtube_video" | "youtube_playlist" | "pdf";
 
     url?: string;
-
     totalDuration?: number;
+
+    youtubeData?: YoutubeVideoData | YoutubePlaylistData;
+
     pdfData?: {
       pageCount?: number;
     };

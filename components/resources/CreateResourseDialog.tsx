@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import axios from "axios";
 import { toast } from "sonner";
+import { extractYoutubeData } from "@/lib/utils/youTube"
+
 
 export const CreateResourceDialog = ({
   projectId,
@@ -12,6 +14,7 @@ export const CreateResourceDialog = ({
   projectId: string;
   setResources: React.Dispatch<React.SetStateAction<Resource[]>>;
 }) => {
+  
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [url, setUrl] = useState("");
@@ -28,7 +31,7 @@ export const CreateResourceDialog = ({
           toast.error("Please upload a PDF");
           return;
         }
-
+        
         const formData = new FormData();
         formData.append("title", title);
         formData.append("file", file);
@@ -39,10 +42,14 @@ export const CreateResourceDialog = ({
         );
       } else {
         // 🔥 VIDEO / PLAYLIST
+        const youTubeData = extractYoutubeData(url);
+        const finalType = youTubeData.playlistId
+          ? "youtube_playlist"
+          : "youtube_video";
         res = await axios.post(`/api/projects/${projectId}/resources`, {
           title,
           url,
-          type,
+          type:finalType,
         });
       }
 

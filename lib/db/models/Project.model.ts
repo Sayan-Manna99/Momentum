@@ -160,9 +160,8 @@ ProjectSchema.methods.updateStats = async function () {
   const totalResources = resources.length;
 
   const completedResources = progressList.filter(
-    (p) => p.status === "completed"
+    (p) => p.progressPercentage >= 95,
   ).length;
-
   const totalDuration = resources.reduce(
     (sum, r) => sum + (r.totalDuration || 0),
     0

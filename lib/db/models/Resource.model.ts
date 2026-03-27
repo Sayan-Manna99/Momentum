@@ -56,6 +56,11 @@ const ResourceSchema = new Schema(
     youtubeData: {
       videoId: String,
       playlistId: String,
+      videos: [
+        {
+          videoId: String,
+        },
+      ],
       channelId: String,
       channelTitle: String,
       title: String,
@@ -80,14 +85,14 @@ const ResourceSchema = new Schema(
     tags: [String],
 
     // Metadata
-   
+
     contentLength: {
       type: Number,
-      default: 0
+      default: 0,
     },
     totalDuration: {
-    type: Number,
-    default: 0
+      type: Number,
+      default: 0,
     },
     // User Interaction
     rating: {

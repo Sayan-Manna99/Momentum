@@ -8,16 +8,28 @@ import { toast } from "sonner";
 import axios from "axios";
 import { useState } from "react";
 import { EditResourceDialog } from "./EditResourseDialog";
+import { useRouter } from "next/dist/client/components/navigation";
+import { useProgress } from "@/app/hooks/useProgress";
+
 
 
 
 export const ResourceCard = ({
   resource,
   setResources,
+  
 }: {
   resource: Resource ;
   setResources: React.Dispatch<React.SetStateAction<any[]>>;
+  
 }) => {
+  
+  const router = useRouter();
+  console.log("Rendering ResourceCard for:", resource.title);
+  console.log("Resource details:", resource);
+
+  const { progress, loading } = useProgress(resource._id);
+  const percentage = progress?.progressPercentage || 0;
   const [openEdit, setOpenEdit] = useState(false);
   const handleEdit = async (e: any) => {
      e.preventDefault();
@@ -76,7 +88,10 @@ export const ResourceCard = ({
           {/* 🔹 Title */}
           <div className="flex items-center gap-2">
             {getIcon()}
-            <h3 className="text-sm font-semibold text-white">
+            <h3
+              onClick={() => router.push(`/resources/${resource._id}`)}
+              className="text-sm font-semibold text-white"
+            >
               {resource.title || "Untitled"}
             </h3>
           </div>
@@ -85,10 +100,10 @@ export const ResourceCard = ({
           <div className="space-y-1">
             <div className="flex justify-between text-xs text-gray-400">
               <span>Progress</span>
-              <span>{resource.progressPercentage || 0}%</span>
+              <span>{percentage || 0}%</span>
             </div>
 
-            <ProgressBar value={resource.progressPercentage || 0} />
+            <ProgressBar value={percentage || 0} />
           </div>
           {/* 🔹 Meta */}
           <div className="flex items-center justify-between gap-4 text-xs text-gray-400">

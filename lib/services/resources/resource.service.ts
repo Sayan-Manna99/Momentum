@@ -44,8 +44,9 @@ export const createResource = async (
   projectId: string,
   data: CreateResourceData,
 ) => {
+  console.log("🔥 RESOURCE TYPE:", data.type);
   const handler = handlers[data.type];
-
+  console.log("Handler name", handler); // 👈 ADD
   if (!handler) {
     throw new Error("Unsupported resource type");
   }

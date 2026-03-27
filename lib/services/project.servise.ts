@@ -67,21 +67,21 @@ export const getProjectsByUserId = async (userId: string) => {
         else if (r.type === "pdf") resourceStats.pdf++;
       }
 
-   let isOverdue = false;
+      let isOverdue = false;
 
-   if (project.targetEndDate) {
-     const targetDate = new Date(project.targetEndDate);
-     const today = new Date();
+      if (project.targetEndDate) {
+        const targetDate = new Date(project.targetEndDate);
+        const today = new Date();
 
-     today.setHours(0, 0, 0, 0);
-     targetDate.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+        targetDate.setHours(0, 0, 0, 0);
 
-     isOverdue =
-       !isNaN(targetDate.getTime()) &&
-       today > targetDate &&
-       project.status !== "completed";
-   }
-    
+        isOverdue =
+          !isNaN(targetDate.getTime()) &&
+          today > targetDate &&
+          project.status !== "completed";
+      }
+
       return {
         _id: project._id.toString(), // Convert ObjectId to string
         userId: project.userId,
@@ -106,7 +106,7 @@ export const getProjectsByUserId = async (userId: string) => {
           completedResources,
           progressPercentage,
         },
-        
+
         resourceStats: resourceStats,
         isOverdue: isOverdue,
       };
@@ -115,7 +115,6 @@ export const getProjectsByUserId = async (userId: string) => {
 
   return enrichedProjects;
 };
-
 
 export const getOneProject = async (userId: string, projectId: string) => {
   const project = await Project.findOne({
@@ -149,14 +148,13 @@ export const deleteOneProject = async (userId: string, projectId: string) => {
   const result = await Project.deleteOne({ userId, _id: projectId }).exec();
   return result;
 };
-
 export const updateProjectStats = async (projectId: string, userId: string) => {
   const [totalResources, completedResources] = await Promise.all([
-    Resource.countDocuments({ projectId, userId }),
+    Resource.countDocuments({ projectId }), // ✅ FIXED
     Progress.countDocuments({
       projectId,
       userId,
-      status: ProgressStatus.COMPLETED,
+      status: ProgressStatus.COMPLETED, // ✅ keep consistent
     }),
   ]);
 
