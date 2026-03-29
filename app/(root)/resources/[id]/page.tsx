@@ -13,15 +13,21 @@ export default function ResourcePage({ params }: { params: Params }) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [resourceId, setResourceId] = useState<string | null>(null);
-  
+  const [progress, setProgress] = useState<any>(null);
+
   useEffect(() => {
     const loadResource = async () => {
       try {
         const { id } = await params;
         setResourceId(id);
 
-        const response = await axios.get(`/api/resources/${id}`);
-        setResource(response.data.data);
+        const [resourceRes, progressRes] = await Promise.all([
+          axios.get(`/api/resources/${id}`),
+          axios.get(`/api/resources/${id}/progress`),
+        ]);
+
+        setResource(resourceRes.data.data);
+        setProgress(progressRes.data.data);
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "Failed to load resource",
@@ -34,7 +40,7 @@ export default function ResourcePage({ params }: { params: Params }) {
     loadResource();
   }, [params]);
 
- 
+  // 🔥 loading
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -46,6 +52,7 @@ export default function ResourcePage({ params }: { params: Params }) {
     );
   }
 
+  // 🔥 error
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -57,6 +64,7 @@ export default function ResourcePage({ params }: { params: Params }) {
     );
   }
 
+  // 🔥 no resource
   if (!resource) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -64,6 +72,8 @@ export default function ResourcePage({ params }: { params: Params }) {
       </div>
     );
   }
+
+  // 🔥 PLAYLIST MODE
   if (resource.type === "youtube_playlist") {
     return (
       <div className="min-h-screen bg-gray-950 p-8">
@@ -72,19 +82,18 @@ export default function ResourcePage({ params }: { params: Params }) {
             {resource.title}
           </h1>
 
-          <PlaylistView resource={resource} />
+          <PlaylistView resource={resource} progress={progress || {}} />
         </div>
       </div>
     );
   }
-  // Better data extraction based on resource type
+
+  // 🔥 VIDEO MODE
   let videoId: string | null = null;
 
   if (resource.type === "youtube_video") {
-    // Use stored videoId from database
     videoId = resource.youtubeData?.videoId || null;
   } else if (resource.url) {
-    // Fallback: extract from URL
     const youtubeData = extractYoutubeData(resource.url);
     videoId = youtubeData?.videoId || null;
   }
@@ -117,18 +126,20 @@ export default function ResourcePage({ params }: { params: Params }) {
           )}
         </div>
 
-        {/* Video Player */}
+        {/* 🔥 VIDEO PLAYER (FIXED) */}
         <div className="mb-8">
           <YoutubePlayer
             videoId={videoId}
             resourceId={resourceId || resource._id}
-            initialTime={resource.lastWatchedPosition || 0}
+            initialTime={progress?.lastWatchedPosition || 0} // ✅ FIXED
+            onProgressUpdate={setProgress} // ✅ LIVE UPDATE
           />
         </div>
 
         {/* Metadata */}
         <div className="bg-gray-800/50 rounded-lg p-6">
           <h2 className="text-xl font-semibold text-white mb-4">Details</h2>
+
           <div className="space-y-2 text-sm">
             {resource.youtubeData?.channelTitle && (
               <div className="flex justify-between">
@@ -138,6 +149,7 @@ export default function ResourcePage({ params }: { params: Params }) {
                 </span>
               </div>
             )}
+
             {resource.youtubeData?.duration && (
               <div className="flex justify-between">
                 <span className="text-gray-400">Duration:</span>
@@ -146,6 +158,7 @@ export default function ResourcePage({ params }: { params: Params }) {
                 </span>
               </div>
             )}
+
             {resource.category && (
               <div className="flex justify-between">
                 <span className="text-gray-400">Category:</span>
@@ -154,6 +167,7 @@ export default function ResourcePage({ params }: { params: Params }) {
                 </span>
               </div>
             )}
+
             {resource.tags && resource.tags.length > 0 && (
               <div className="flex justify-between">
                 <span className="text-gray-400">Tags:</span>
@@ -176,14 +190,16 @@ export default function ResourcePage({ params }: { params: Params }) {
   );
 }
 
-// Helper function to format duration
+// helper
 function formatDuration(seconds: number): string {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
   const secs = seconds % 60;
 
   if (hours > 0) {
-    return `${hours}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+    return `${hours}:${minutes
+      .toString()
+      .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   }
   return `${minutes}:${secs.toString().padStart(2, "0")}`;
 }
