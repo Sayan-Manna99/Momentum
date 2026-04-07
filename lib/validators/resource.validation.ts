@@ -16,10 +16,11 @@ const playlistResourceSchema = z.object({
   tags: z.array(z.string()).optional(),
 });
 
-const pdfResourceSchema = z.object({
+
+export const pdfResourceSchema = z.object({
   type: z.literal("pdf"),
   title: z.string().min(3),
-  file: z.instanceof(File),
+  fileUrl: z.string(), // ✅ changed from File → URL
 });
 
 export const createResourceSchema = z.discriminatedUnion("type", [

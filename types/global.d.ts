@@ -60,8 +60,7 @@ declare global {
     tags?: string[];
   };
   type PdfProgressInput = {
-    pagesRead: number;
-    lastPageRead: number;
+    currentPage: number;
   };
   type PlaylistProgressInput = {
     videoId: string;

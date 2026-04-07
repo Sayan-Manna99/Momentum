@@ -9,7 +9,6 @@ import {
 import { createResourceSchema } from "@/lib/validators/resource.validation";
 import { successResponse, errorResponse } from "@/lib/utils/apiResponse";
 
-// CREATE resource
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -30,30 +29,11 @@ export async function POST(
       return errorResponse("Unauthorized", 401);
     }
 
-    const contentType = req.headers.get("content-type");
-
-    // ---------- PDF Upload ----------
-    if (contentType?.includes("multipart/form-data")) {
-      const formData = await req.formData();
-
-      const title = formData.get("title") as string;
-      const file = formData.get("file") as File;
-
-      if (!title || !file) {
-        return errorResponse("Title and file are required", 400);
-      }
-
-      const resource = await createResource(session.user.id, id, {
-        type: "pdf",
-        title,
-        file,
-      });
-
-      return successResponse(resource, 201);
-    }
-
-    // ---------- JSON Resources ----------
+    // ✅ ALWAYS JSON NOW
     const body = await req.json();
+
+    console.log("BODY:", body); // 👈 DEBUG
+
     const validatedData = createResourceSchema.parse(body);
 
     const resource = await createResource(session.user.id, id, validatedData);
@@ -72,7 +52,6 @@ export async function POST(
     );
   }
 }
-
 // GET resources by project ID
 export async function GET(
   req: NextRequest,
