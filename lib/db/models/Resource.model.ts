@@ -59,7 +59,7 @@ const ResourceSchema = new Schema(
       videos: [
         {
           videoId: String,
-          duration:Number
+          duration: Number,
         },
       ],
       channelId: String,
@@ -73,9 +73,9 @@ const ResourceSchema = new Schema(
     videoCount: Number,
 
     // PDF Specific Data
+    fileUrl: String,
     pdfData: {
-      cloudinaryUrl: String,
-      cloudinaryPublicId: String,
+     
       fileSize: Number, // in bytes
       pageCount: Number,
       fileName: String,

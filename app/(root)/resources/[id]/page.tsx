@@ -5,6 +5,12 @@ import axios from "axios";
 import { YoutubePlayer } from "@/components/resources/YouTubePlayer";
 import { extractYoutubeData } from "@/lib/utils/youTube";
 import { PlaylistView } from "@/components/resources/PlyListView";
+import dynamic from "next/dynamic";
+
+const PdfViewer = dynamic(
+  () => import("@/components/resources/PdfViewer").then((m) => m.PdfViewer),
+  { ssr: false },
+);
 
 type Params = Promise<{ id: string }>;
 
@@ -72,7 +78,23 @@ export default function ResourcePage({ params }: { params: Params }) {
       </div>
     );
   }
+  if (resource.type === "pdf") {
+    return (
+      <div className="min-h-screen bg-gray-950 p-8">
+        <div className="max-w-6xl mx-auto">
+          <h1 className="text-3xl font-bold text-white mb-6">
+            {resource.title}
+          </h1>
 
+          <PdfViewer
+            resource={resource}
+            progress={progress || {}}
+            onProgressUpdate={setProgress}
+          />
+        </div>
+      </div>
+    );
+  }
   // 🔥 PLAYLIST MODE
   if (resource.type === "youtube_playlist") {
     return (

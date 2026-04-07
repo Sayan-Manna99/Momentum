@@ -51,7 +51,7 @@ export const PlaylistView = ({
 
           const p = progressMap[video.videoId];
 
-          // ✅ correct percentage calculation
+          //  correct percentage calculation
           const percent =
             video.duration && video.duration > 0
               ? Math.floor(((p?.watchedDuration || 0) / video.duration) * 100)
@@ -75,7 +75,7 @@ export const PlaylistView = ({
                 </span>
               </div>
 
-              {/* ✅ progress bar */}
+              {/*  progress bar */}
               <div className="mt-2 h-1 bg-gray-700 rounded overflow-hidden">
                 <div
                   className="h-full bg-gray-400 transition-all"
@@ -84,7 +84,7 @@ export const PlaylistView = ({
                 <ProgressBar value={percent}/>
               </div>
 
-              {/* ✅ completed state */}
+              {/*  completed state */}
               {p?.completed && (
                 <div className="text-green-400 text-xs mt-1">✓ Completed</div>
               )}
@@ -99,7 +99,7 @@ export const PlaylistView = ({
           videoId={videos[currentIndex].videoId}
           resourceId={resource._id}
           playlistMode={true}
-          // 🔥 resume from last position
+          // resume from last position
           initialTime={
             progressMap[videos[currentIndex].videoId]?.lastPosition || 0
           }

@@ -29,8 +29,7 @@ export function extractYoutubeData(url: string) {
   return { videoId, playlistId };
 }
 
-const API_KEY = process.env.YOUTUBE_API_KEY!;
-console.log("YT KEY:", process.env.YOUTUBE_API_KEY);
+
 export const getVideoDetails = async (videoId: string) => {
   const res = await axios.get("https://www.googleapis.com/youtube/v3/videos", {
     params: {

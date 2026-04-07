@@ -1,11 +1,10 @@
 import Resource from "@/lib/db/models/Resource.model";
 import { uploadPdf } from "@/lib/utils/uploadPdf";
-import { PDFDocument } from "pdf-lib";
 import { updateProjectStats } from "../project.servise";
 
 type CreatePdfResourceData = {
   title: string;
-  file: File;
+  fileUrl: string; // ✅ changed from File → URL
 };
 
 export const createPdfResource = async (
@@ -14,37 +13,26 @@ export const createPdfResource = async (
   data: CreatePdfResourceData,
 ) => {
   try {
-    // 1. Convert file to ArrayBuffer
-    const arrayBuffer = await data.file.arrayBuffer();
+    // ✅ Process PDF (pages + size)
+    const upload = await uploadPdf(data.fileUrl);
 
-    // 2. Extract page count using pdf-lib
-    let totalPages = 1; // safe default
-
-    try {
-      const pdfDoc = await PDFDocument.load(arrayBuffer);
-      totalPages = pdfDoc.getPageCount();
-    } catch (error) {
-      console.warn("Could not extract PDF page count:", error);
-    }
-
-    // 3. Upload PDF
-    const upload = await uploadPdf(data.file);
-
-    // 4. Save resource
+    // ✅ Save resource
     const resource = await Resource.create({
       userId,
       projectId,
       title: data.title,
       type: "pdf",
+      fileUrl: upload.url, // ✅ updated
       pdfData: {
-        cloudinaryUrl: upload.url,
-        cloudinaryPublicId: upload.publicId,
+        fileUrl: upload.url, // ✅ updated
         fileSize: upload.bytes,
-        pageCount: totalPages,
+        pageCount: upload.pages, // ✅ from pdf-parse
       },
       tags: [],
     });
+
     await updateProjectStats(projectId, userId);
+
     return resource;
   } catch (error) {
     console.error("Error creating PDF resource:", error);

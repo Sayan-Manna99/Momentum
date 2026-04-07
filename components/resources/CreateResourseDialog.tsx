@@ -4,8 +4,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import axios from "axios";
 import { toast } from "sonner";
-import { extractYoutubeData } from "@/lib/utils/youTube"
-
+import { extractYoutubeData } from "@/lib/utils/youTube";
+import { UploadButton } from "@uploadthing/react";
+import type { OurFileRouter } from "@/app/api/uploadthing/core";
 
 export const CreateResourceDialog = ({
   projectId,
@@ -14,48 +15,44 @@ export const CreateResourceDialog = ({
   projectId: string;
   setResources: React.Dispatch<React.SetStateAction<Resource[]>>;
 }) => {
-  
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
-  const [url, setUrl] = useState("");
+  const [url, setUrl] = useState(""); 
   const [type, setType] = useState("youtube_video");
-  const [file, setFile] = useState<File | null>(null); // ✅ FIX
 
   const handleSubmit = async () => {
     try {
       let res;
 
-      // 🔥 PDF CASE
+      
       if (type === "pdf") {
-        if (!file) {
-          toast.error("Please upload a PDF");
+        if (!url) {
+          toast.error("Please upload PDF first");
           return;
         }
-        
-        const formData = new FormData();
-        formData.append("title", title);
-        formData.append("file", file);
 
-        res = await axios.post(
-          `/api/projects/${projectId}/resources`,
-          formData,
-        );
+        res = await axios.post(`/api/projects/${projectId}/resources`, {
+          title,
+          fileUrl: url, 
+          type: "pdf",
+        });
       } else {
         // 🔥 VIDEO / PLAYLIST
         const youTubeData = extractYoutubeData(url);
         const finalType = youTubeData.playlistId
           ? "youtube_playlist"
           : "youtube_video";
+
         res = await axios.post(`/api/projects/${projectId}/resources`, {
           title,
           url,
-          type:finalType,
+          type: finalType,
         });
       }
 
       const newResource = res.data.data;
 
-      // ✅ optimistic update
+      //  optimistic update
       setResources((prev: Resource[]) => [newResource, ...prev]);
 
       toast.success("Resource added");
@@ -64,7 +61,6 @@ export const CreateResourceDialog = ({
       setOpen(false);
       setTitle("");
       setUrl("");
-      setFile(null);
     } catch (err) {
       console.error(err);
       toast.error("Failed to add resource");
@@ -88,7 +84,6 @@ export const CreateResourceDialog = ({
               onChange={(e) => {
                 setType(e.target.value);
                 setUrl("");
-                setFile(null);
               }}
               className="w-full p-2 bg-neutral-800 rounded"
             >
@@ -107,56 +102,30 @@ export const CreateResourceDialog = ({
 
             {/* 🔥 CONDITIONAL INPUT */}
             {type === "pdf" ? (
-              <label
-                htmlFor="pdfUpload"
-                className="block border-2 border-dashed border-white/20 rounded-lg p-6 text-center cursor-pointer hover:border-white/40 transition"
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  const droppedFile = e.dataTransfer.files?.[0];
+              <div className="space-y-2">
+                <UploadButton<OurFileRouter>
+                  endpoint="resourceUploader"
+                  onClientUploadComplete={(res) => {
+                   
 
-                  if (droppedFile && droppedFile.type === "application/pdf") {
-                    setFile(droppedFile);
-                  } else {
-                    toast.error("Only PDF allowed");
-                  }
-                }}
-              >
-                {file ? (
-                  <div className="space-y-1">
-                    <p className="text-green-400 font-medium">📄 {file.name}</p>
-                    <p className="text-xs text-gray-400">
-                      {(file.size / 1024 / 1024).toFixed(2)} MB
-                    </p>
-                  </div>
-                ) : (
-                  <p className="text-gray-400">
-                    Drag & drop PDF here or{" "}
-                    <span className="underline">click to upload</span>
-                  </p>
-                )}
+                    const file = res[0];
 
-                <input
-                  id="pdfUpload"
-                  type="file"
-                  accept="application/pdf"
-                  className="hidden"
-                  onChange={(e) => {
-                    const selectedFile = e.target.files?.[0];
-                    if (
-                      selectedFile &&
-                      selectedFile.type === "application/pdf"
-                    ) {
-                      setFile(selectedFile);
-                    } else {
-                      toast.error("Only PDF allowed");
-                    }
+                   
+
+                    setUrl(file?.url); // store URL
+
+                    toast.success("PDF uploaded");
+                  }}
+                  onUploadError={(error: Error) => {
+                    toast.error(error.message);
                   }}
                 />
-              </label>
+
+               
+              </div>
             ) : (
               <input
-                value={url || ""}
+                value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 placeholder="YouTube URL"
                 className="w-full p-2 bg-neutral-800 rounded"
@@ -165,11 +134,18 @@ export const CreateResourceDialog = ({
 
             {/* ACTIONS */}
             <div className="flex justify-end gap-2">
-              <Button variant="ghost" onClick={() => setOpen(false)} className="bg-red-500 hover:bg-red-600">
+              <Button
+                variant="ghost"
+                onClick={() => setOpen(false)}
+                className="bg-red-500 hover:bg-red-600"
+              >
                 Cancel
               </Button>
 
-              <Button onClick={handleSubmit} className="bg-blue-500 hover:bg-blue-600">
+              <Button
+                onClick={handleSubmit}
+                className="bg-blue-500 hover:bg-blue-600"
+              >
                 Add
               </Button>
             </div>

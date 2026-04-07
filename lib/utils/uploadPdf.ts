@@ -1,50 +1,29 @@
-import { UploadApiResponse, UploadApiErrorResponse } from "cloudinary";
-import cloudinary from "@/lib/cloudinary/config";
-import { Readable } from "stream";
+import { getPdfMetadata } from "./pdfMetadata";
 
 export interface UploadedFile {
   url: string;
-  publicId: string;
-  bytes: number;
   pages: number;
+  bytes: number;
 }
 
-export const uploadPdf = async (file: File): Promise<UploadedFile> => {
-  const buffer = Buffer.from(await file.arrayBuffer());
+export const uploadPdf = async (fileUrl: string): Promise<UploadedFile> => {
+  try {
+   
+    const res = await fetch(fileUrl);
+    const arrayBuffer = await res.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
 
-  return new Promise((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
-      {
-        resource_type: "raw",
-        folder: "momentum/pdfs",
-        format: "pdf",
-      },
-      (
-        error: UploadApiErrorResponse | undefined,
-        result: UploadApiResponse | undefined,
-      ) => {
-        if (error) {
-          console.error("Cloudinary upload error:", error);
-          reject(error);
-          return;
-        }
+   
+    const data = await getPdfMetadata(fileUrl);
 
-        if (!result) {
-          reject(new Error("Upload failed: no result returned"));
-          return;
-        }
-
-        resolve({
-          url: result.secure_url,
-          publicId: result.public_id,
-          bytes: result.bytes,
-          pages: result.pages ?? 0,
-        });
-      },
-    );
-
-    // ✅ Convert buffer to readable stream and pipe it
-    const readableStream = Readable.from(buffer);
-    readableStream.pipe(uploadStream);
-  });
+    return {
+      url: fileUrl,
+      pages: data.pages,
+      bytes: buffer.length,
+    };
+  } catch (error) {
+    console.error("PDF processing error:", error);
+    throw new Error("Failed to process PDF");
+  }
 };
+
