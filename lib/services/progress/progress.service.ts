@@ -19,12 +19,8 @@ const isPlaylistInput = (data: unknown): data is PlaylistProgressInput => {
 };
 
 const isPdfInput = (data: unknown): data is PdfProgressInput => {
-  return (
-    typeof (data as PdfProgressInput)?.pagesRead === "number" &&
-    typeof (data as PdfProgressInput)?.lastPageRead === "number"
-  );
+  return typeof (data as PdfProgressInput)?.currentPage === "number";
 };
-
 // ---------------- GET ----------------
 
 export const getProgressByResource = async (

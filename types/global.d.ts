@@ -59,9 +59,9 @@ declare global {
     videoCount?: number;
     tags?: string[];
   };
-  type PdfProgressInput = {
-    currentPage: number;
-  };
+type PdfProgressInput = {
+  currentPage: number;
+};
   type PlaylistProgressInput = {
     videoId: string;
     position: number;

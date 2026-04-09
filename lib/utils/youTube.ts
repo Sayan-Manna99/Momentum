@@ -35,7 +35,7 @@ export const getVideoDetails = async (videoId: string) => {
     params: {
       part: "contentDetails",
       id: videoId,
-      key: API_KEY,
+      key: process.env.YOUTUBE_API_KEY,
     },
   });
 
@@ -78,7 +78,7 @@ export const getPlaylistVideos = async (
           playlistId,
           maxResults: 50,
           pageToken: nextPageToken,
-          key: API_KEY,
+          key: process.env.YOUTUBE_API_KEY,
         },
       },
     );
@@ -112,7 +112,7 @@ export const getMultipleVideoDurations = async (
         params: {
           part: "contentDetails",
           id: chunk.join(","),
-          key: API_KEY,
+          key: process.env.YOUTUBE_API_KEY,
         },
       },
     );

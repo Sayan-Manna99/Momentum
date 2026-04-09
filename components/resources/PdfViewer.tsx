@@ -29,11 +29,7 @@ type PdfViewerProps = {
   onProgressUpdate?: (data: unknown) => void;
 };
 
-export const PdfViewer = ({
-  resource,
-  progress,
-  onProgressUpdate,
-}: PdfViewerProps) => {
+export const PdfViewer = ({ resource, progress, onProgressUpdate }: PdfViewerProps) => {
   const fileUrl = resource?.fileUrl;
 
   const [page, setPage] = useState(progress?.lastPageRead || 1);
@@ -42,10 +38,12 @@ export const PdfViewer = ({
   const [mode, setMode] = useState<"page" | "scroll">("page");
   const [loading, setLoading] = useState(true);
 
-  // ✅ FIX: useRef instead of variable mutation
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // ✅ Load success
+  // 🔥 DEBUG: initial data
+  console.log("📄 RESOURCE:", resource);
+  console.log("🔗 FILE URL:", fileUrl);
+  console.log("📊 INITIAL PROGRESS:", progress);
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
     setLoading(false);
@@ -57,6 +55,11 @@ export const PdfViewer = ({
 
     timeoutRef.current = setTimeout(async () => {
       try {
+        console.log("🚀 Sending PATCH request:", {
+          resourceId: resource._id,
+          currentPage: newPage,
+        });
+
         const res = await axios.patch("/api/progress", {
           resourceId: resource._id,
           currentPage: newPage,
@@ -91,7 +94,7 @@ export const PdfViewer = ({
         {/* Navigation */}
         <div className="flex items-center gap-3">
           <button onClick={() => changePage(page - 1)} disabled={page <= 1}>
-            <ArrowLeft/>
+            <ArrowLeft />
           </button>
 
           <span>
@@ -102,7 +105,7 @@ export const PdfViewer = ({
             onClick={() => changePage(page + 1)}
             disabled={numPages ? page >= numPages : true}
           >
-            <ArrowRight/>
+            <ArrowRight />
           </button>
         </div>
 
@@ -159,4 +162,4 @@ export const PdfViewer = ({
       </div>
     </div>
   );
-};
+};;

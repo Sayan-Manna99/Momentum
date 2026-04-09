@@ -149,14 +149,18 @@ export const deleteOneProject = async (userId: string, projectId: string) => {
   return result;
 };
 export const updateProjectStats = async (projectId: string, userId: string) => {
-  const [totalResources, completedResources] = await Promise.all([
-    Resource.countDocuments({ projectId }), // ✅ FIXED
-    Progress.countDocuments({
-      projectId,
-      userId,
-      status: ProgressStatus.COMPLETED, // ✅ keep consistent
-    }),
-  ]);
+  const totalResources = await Resource.countDocuments({ projectId });
+
+  const completedResources = await Progress.countDocuments({
+    projectId,
+    userId,
+    status: ProgressStatus.COMPLETED,
+  });
+
+  console.log("📊 PROJECT STATS:", {
+    totalResources,
+    completedResources,
+  });
 
   const progressPercentage =
     totalResources === 0
