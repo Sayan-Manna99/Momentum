@@ -82,12 +82,12 @@ export const updatePdfProgress = async (
     // 🔥 6. Always update last visited page
     progress.lastPageRead = currentPage;
 
-    // 🔥 7. Calculate percentage
+    //  7. Calculate percentage
     progress.progressPercentage = Math.floor(
       (progress.pagesRead / totalPages) * 100,
     );
 
-    // 🔥 8. Status logic
+    //  8. Status logic
     if (!progress.startedAt && progress.pagesRead > 0) {
       progress.startedAt = new Date();
     }
