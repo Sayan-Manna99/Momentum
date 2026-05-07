@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { ProgressBar } from "./ProgressBar";
-import { Calendar, FileText, ListVideo, Video,Pencil,Trash2 } from "lucide-react";
+import { Calendar, FileText, ListVideo, Video,Pencil,Trash2, BarChart } from "lucide-react";
 import { Button } from "../ui/button";
 import axios from "axios";
 import { toast } from "sonner";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { EditProjectDialog } from "./EditProjectDialog";
 
@@ -19,6 +20,7 @@ export const ProjectCard = ({
   project: Project;
   setProjects: React.Dispatch<React.SetStateAction<Project[]>>;
 }) => {
+  const router = useRouter();
   const [openEdit, setOpenEdit] = useState(false);
   const onEdit = () => {
    try {
@@ -111,6 +113,16 @@ export const ProjectCard = ({
             
             {/* Future: edit/delete */}
             <div className="flex gap-2 opacity-70">
+              <Button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  router.push(`/analytics/${project._id}`);
+                }}
+              >
+                <BarChart className="text-green-500 mr-1" size={14} />
+                Analytics
+              </Button>
               <Button
                 onClick={(e) => {
                   e.preventDefault();
