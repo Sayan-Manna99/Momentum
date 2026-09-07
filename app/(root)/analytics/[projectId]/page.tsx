@@ -205,59 +205,50 @@ function Analytics({ projectId }: AnalyticsProps) {
       <div className="relative z-10 w-full h-full p-6">
         {/* 🔵 Header */}
         <div className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight">
-          Analytics Dashboard
-        </h1>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Analytics Dashboard
+          </h1>
 
-        <p className="text-muted-foreground mt-1">
-          Real-time insights into your learning progress.
-        </p>
-      </div>
-
-      <div className="space-y-8">
-        {/* 🟩 Stats Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <AnalyticsStatCard
-            title="Total Resources"
-            value={data.overview.totalResources}
-            icon={<Layers size={22} />}
-          />
-          <AnalyticsStatCard
-            title="Completed"
-            value={data.progress.completed}
-            icon={<CheckCircle size={22} />}
-          />
-          <AnalyticsStatCard
-            title="In Progress"
-            value={data.progress.inProgress}
-            icon={<Clock size={22} />}
-          />
-          <AnalyticsStatCard
-            title="Not Started"
-            value={data.progress.notStarted}
-            icon={<FileText size={22} />}
-          />
+          <p className="text-muted-foreground mt-1">
+            Real-time insights into your learning progress.
+          </p>
         </div>
 
-        {/* 🟨 Charts Section */}
-        <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* 📈 LEFT: Weekly Progress */}
-          <div className="lg:col-span-2 border rounded-xl p-6 shadow-sm bg-card">
-            <h3 className="font-medium mb-4">
-              Weekly Progress
-            </h3>
+        <div className="space-y-8">
+          {/* 🟩 Stats Cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <AnalyticsStatCard
+              title="Total Resources"
+              value={data.overview.totalResources}
+              icon={<Layers size={22} />}
+            />
+            <AnalyticsStatCard
+              title="Completed"
+              value={data.progress.completed}
+              icon={<CheckCircle size={22} />}
+            />
+            <AnalyticsStatCard
+              title="In Progress"
+              value={data.progress.inProgress}
+              icon={<Clock size={22} />}
+            />
+            <AnalyticsStatCard
+              title="Not Started"
+              value={data.progress.notStarted}
+              icon={<FileText size={22} />}
+            />
+          </div>
 
-            <div className="w-full h-[320px] min-w-0">
-              <ResponsiveContainer width="100%" height="100%">
+          {/* 🟨 Charts Section */}
+          <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* 📈 LEFT: Weekly Progress */}
+            <div className="lg:col-span-1 min-w-0 border rounded-xl p-6 shadow-sm bg-card">
+              <ResponsiveContainer width="100%" aspect={2}>
                 <LineChart data={weeklyData}>
                   <CartesianGrid strokeDasharray="3 3" />
-
                   <XAxis dataKey="day" />
-
                   <YAxis />
-
                   <Tooltip />
-
                   <Line
                     type="monotone"
                     dataKey="value"
@@ -268,69 +259,54 @@ function Analytics({ projectId }: AnalyticsProps) {
                 </LineChart>
               </ResponsiveContainer>
             </div>
-          </div>
 
-          {/* 🥧 RIGHT: Pie Chart */}
-          <div className="lg:col-span-1 border rounded-xl p-6 shadow-sm bg-card">
-            <h3 className="font-medium mb-4">
-              Overall Completion
-            </h3>
+            {/* 🥧 RIGHT: Pie Chart */}
+            <div className="lg:col-span-1 min-w-0 border rounded-xl p-6 shadow-sm bg-card">
+              <h3 className="font-medium mb-4">Overall Completion</h3>
 
-            <div className="w-full h-[320px] min-w-0">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={pieData}
-                    dataKey="value"
-                    outerRadius={100}
-                    label={({ percent }) =>
-                      `${((percent ?? 0) * 100).toFixed(0)}%`
-                    }
-                  >
-                    {pieData.map((_, index) => (
-                      <Cell
-                        key={index}
-                        fill={PIE_COLORS[index % PIE_COLORS.length]}
-                      />
-                    ))}
-                  </Pie>
+              <div className="w-full min-w-0">
+                <ResponsiveContainer width="100%" aspect={1}>
+                  <PieChart>
+                    <Pie
+                      data={pieData}
+                      dataKey="value"
+                      outerRadius="80%"
+                      label={({ percent }) =>
+                        `${((percent ?? 0) * 100).toFixed(0)}%`
+                      }
+                    >
+                      {pieData.map((_, index) => (
+                        <Cell
+                          key={index}
+                          fill={PIE_COLORS[index % PIE_COLORS.length]}
+                        />
+                      ))}
+                    </Pie>
 
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
             </div>
-          </div>
-        </section>
+            {/* 📚 Resource Breakdown */}
 
-        {/* 📚 Resource Breakdown */}
-        <section className="border rounded-xl p-6 shadow-sm bg-card">
-          <h3 className="font-medium mb-4">
-            Resource Breakdown
-          </h3>
-
-          <div className="w-full h-[320px] min-w-0">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={resourceData}>
-                <CartesianGrid strokeDasharray="3 3" />
-
-                <XAxis dataKey="name" />
-
-                <YAxis />
-
-                <Tooltip />
-
-                <Bar
-                  dataKey="value"
-                  radius={[6, 6, 0, 0]}
-                  fill="#8b5cf6"
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </section>
-
+            <h3 className="font-medium mb-4">Resource Breakdown</h3>
+            <div className="lg:col-span-1 min-w-0 border rounded-xl p-6 shadow-sm bg-card">
+              <div className="w-full min-w-0">
+                <ResponsiveContainer width="100%" aspect={2.5}>
+                  <BarChart data={resourceData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="value" radius={[6, 6, 0, 0]} fill="#8b5cf6" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </section>
+        </div>
       </div>
-    </div>
     </div>
   );
 }
