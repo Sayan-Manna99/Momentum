@@ -216,26 +216,37 @@ function Analytics({ projectId }: AnalyticsProps) {
 
         <div className="space-y-8">
           {/* 🟩 Stats Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <AnalyticsStatCard
               title="Total Resources"
               value={data.overview.totalResources}
               icon={<Layers size={22} />}
+              valueColor="text-white"
+              subtleColor="text-white/50 group-hover:text-white/70"
             />
+
             <AnalyticsStatCard
               title="Completed"
               value={data.progress.completed}
               icon={<CheckCircle size={22} />}
+              valueColor="text-green-400"
+              subtleColor="text-green-400/60 group-hover:text-green-400"
             />
+
             <AnalyticsStatCard
               title="In Progress"
               value={data.progress.inProgress}
               icon={<Clock size={22} />}
+              valueColor="text-yellow-400"
+              subtleColor="text-yellow-400/60 group-hover:text-yellow-400"
             />
+
             <AnalyticsStatCard
               title="Not Started"
               value={data.progress.notStarted}
               icon={<FileText size={22} />}
+              valueColor="text-cyan-400"
+              subtleColor="text-cyan-400/60 group-hover:text-cyan-400"
             />
           </div>
 
