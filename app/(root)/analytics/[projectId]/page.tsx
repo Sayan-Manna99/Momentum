@@ -253,26 +253,54 @@ function Analytics({ projectId }: AnalyticsProps) {
           {/* 🟨 Charts Section */}
           <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* 📈 LEFT: Weekly Progress */}
-            <div className="lg:col-span-1 min-w-0 border rounded-xl p-6 shadow-sm bg-card">
+            <div className="lg:col-span-1 min-w-0 border border-white/10 rounded-2xl p-6 shadow-sm bg-neutral-400/20 backdrop-blur-lg">
+              <h3 className="font-medium mb-4 text-white/80">
+                Weekly Progress
+              </h3>
+
               <ResponsiveContainer width="100%" aspect={2}>
                 <LineChart data={weeklyData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="day" />
-                  <YAxis />
-                  <Tooltip />
+                  <CartesianGrid
+                    stroke="rgba(255,255,255,0.10)"
+                    strokeDasharray="3 3"
+                  />
+
+                  <XAxis
+                    dataKey="day"
+                    stroke="rgba(255,255,255,0.4)"
+                    tick={{ fill: "rgba(255,255,255,0.55)" }}
+                  />
+
+                  <YAxis
+                    stroke="rgba(255,255,255,0.4)"
+                    tick={{ fill: "rgba(255,255,255,0.55)" }}
+                  />
+
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "rgba(30,30,35,0.95)",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                      borderRadius: "12px",
+                      color: "white",
+                    }}
+                  />
+
                   <Line
                     type="monotone"
                     dataKey="value"
                     stroke="#3b82f6"
                     strokeWidth={2}
-                    dot={{ r: 4 }}
+                    dot={{
+                      r: 4,
+                      fill: "#3b82f6",
+                    }}
                   />
                 </LineChart>
               </ResponsiveContainer>
             </div>
 
             {/* 🥧 RIGHT: Pie Chart */}
-            <div className="lg:col-span-1 min-w-0 border rounded-xl p-6 shadow-sm bg-card">
+            <div className="lg:col-span-1 min-w-0 border border-white/10 rounded-2xl p-6 shadow-sm bg-neutral-400/20 backdrop-blur-lg">
               <h3 className="font-medium mb-4">Overall Completion</h3>
 
               <div className="w-full min-w-0">
@@ -301,19 +329,41 @@ function Analytics({ projectId }: AnalyticsProps) {
             </div>
             {/* 📚 Resource Breakdown */}
 
-            <div className="lg:col-span-1 min-w-0 border rounded-xl p-6 shadow-sm bg-card">
-              <h3 className="font-medium mb-4">Resource Breakdown</h3>
-              <div className="w-full min-w-0">
-                <ResponsiveContainer width="100%" aspect={2.5}>
-                  <BarChart data={resourceData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="value" radius={[6, 6, 0, 0]} fill="#8b5cf6" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+            <div className="lg:col-span-1 min-w-0 border border-white/10 rounded-2xl p-6 shadow-sm bg-neutral-400/20 backdrop-blur-lg">
+              <h3 className="font-medium mb-4 text-white/80">
+                Resource Breakdown
+              </h3>
+
+              <ResponsiveContainer width="100%" aspect={2.5}>
+                <BarChart data={resourceData}>
+                  <CartesianGrid
+                    stroke="rgba(255,255,255,0.10)"
+                    strokeDasharray="3 3"
+                  />
+
+                  <XAxis
+                    dataKey="name"
+                    stroke="rgba(255,255,255,0.4)"
+                    tick={{ fill: "rgba(255,255,255,0.55)" }}
+                  />
+
+                  <YAxis
+                    stroke="rgba(255,255,255,0.4)"
+                    tick={{ fill: "rgba(255,255,255,0.55)" }}
+                  />
+
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "rgba(30,30,35,0.95)",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                      borderRadius: "12px",
+                      color: "white",
+                    }}
+                  />
+
+                  <Bar dataKey="value" radius={[6, 6, 0, 0]} fill="#8b5cf6" />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </section>
         </div>
