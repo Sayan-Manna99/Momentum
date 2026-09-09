@@ -40,13 +40,11 @@ export const PdfViewer = ({ resource, progress, onProgressUpdate }: PdfViewerPro
 
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // 🔥 DEBUG: initial data
-  console.log("📄 RESOURCE:", resource);
-  console.log("🔗 FILE URL:", fileUrl);
-  console.log("📊 INITIAL PROGRESS:", progress);
+
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
     setLoading(false);
+    updateProgress(page);
   };
 
   // ✅ Clean debounce

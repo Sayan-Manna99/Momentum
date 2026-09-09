@@ -301,7 +301,9 @@ function Analytics({ projectId }: AnalyticsProps) {
 
             {/* 🥧 RIGHT: Pie Chart */}
             <div className="lg:col-span-1 min-w-0 border border-white/10 rounded-2xl p-6 shadow-sm bg-neutral-400/20 backdrop-blur-lg">
-              <h3 className="font-medium mb-4">Overall Completion</h3>
+              <h3 className="font-medium mb-4 text-white/80">
+                Overall Completion
+              </h3>
 
               <div className="w-full min-w-0">
                 <ResponsiveContainer width="100%" aspect={1}>
@@ -309,7 +311,8 @@ function Analytics({ projectId }: AnalyticsProps) {
                     <Pie
                       data={pieData}
                       dataKey="value"
-                      outerRadius="80%"
+                      nameKey="name"
+                      outerRadius="75%"
                       label={({ percent }) =>
                         `${((percent ?? 0) * 100).toFixed(0)}%`
                       }
@@ -322,7 +325,14 @@ function Analytics({ projectId }: AnalyticsProps) {
                       ))}
                     </Pie>
 
-                    <Tooltip />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "rgba(30, 30, 35, 0.95)",
+                        border: "1px solid rgba(255,255,255,0.1)",
+                        borderRadius: "12px",
+                        color: "white",
+                      }}
+                    />
                   </PieChart>
                 </ResponsiveContainer>
               </div>

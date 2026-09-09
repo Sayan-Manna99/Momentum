@@ -55,37 +55,88 @@ export const getProgressStats = async (projectId: string, userId: string) => {
   try {
     const objectProjectId = new mongoose.Types.ObjectId(projectId);
 
-    // 1. Total resources
-    const totalResources = await Resource.countDocuments({
-      projectId: objectProjectId,
-    });
-
-    // 2. Aggregate progress states
-    const progressStats = await Progress.aggregate([
+    const progressStats = await Resource.aggregate([
+      // 1. Get only resources belonging to this project
       {
         $match: {
           projectId: objectProjectId,
-          userId,
         },
       },
+
+      // 2. Find this user's progress for each resource
+      {
+        $lookup: {
+          from: "progresses",
+          let: {
+            resourceId: "$_id",
+          },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    {
+                      $eq: ["$resourceId", "$$resourceId"],
+                    },
+                    {
+                      $eq: ["$userId", userId],
+                    },
+                  ],
+                },
+              },
+            },
+            {
+              $project: {
+                status: 1,
+              },
+            },
+          ],
+          as: "progress",
+        },
+      },
+
+      // 3. Convert missing progress into NOT_STARTED
+      {
+        $addFields: {
+          status: {
+            $ifNull: [
+              {
+                $arrayElemAt: ["$progress.status", 0],
+              },
+              "not_started",
+            ],
+          },
+        },
+      },
+
+      // 4. Count each status
       {
         $group: {
           _id: "$status",
-          count: { $sum: 1 },
+          count: {
+            $sum: 1,
+          },
         },
       },
     ]);
 
     let completed = 0;
     let inProgress = 0;
+    let notStarted = 0;
 
     progressStats.forEach((item) => {
-      if (item._id === "completed") completed = item.count;
-      if (item._id === "in_progress") inProgress = item.count;
-    });
+      if (item._id === "completed") {
+        completed = item.count;
+      }
 
-    const tracked = completed + inProgress;
-    const notStarted = totalResources - tracked;
+      if (item._id === "in_progress") {
+        inProgress = item.count;
+      }
+
+      if (item._id === "not_started") {
+        notStarted = item.count;
+      }
+    });
 
     return {
       completed,
