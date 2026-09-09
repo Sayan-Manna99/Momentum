@@ -290,8 +290,8 @@ function Analytics({ projectId }: AnalyticsProps) {
             </div>
             {/* 📚 Resource Breakdown */}
 
-            <h3 className="font-medium mb-4">Resource Breakdown</h3>
             <div className="lg:col-span-1 min-w-0 border rounded-xl p-6 shadow-sm bg-card">
+              <h3 className="font-medium mb-4">Resource Breakdown</h3>
               <div className="w-full min-w-0">
                 <ResponsiveContainer width="100%" aspect={2.5}>
                   <BarChart data={resourceData}>
