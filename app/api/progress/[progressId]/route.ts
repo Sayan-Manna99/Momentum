@@ -10,10 +10,10 @@ import { successResponse, errorResponse } from "@/lib/utils/apiResponse";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ resourceId: string }> },
+  { params }: { params: Promise<{ progressId: string }> },
 ) {
   try {
-    const { resourceId } = await params;
+    const { progressId: resourceId } = await params;
 
     if (!mongoose.Types.ObjectId.isValid(resourceId)) {
       return errorResponse("Invalid resource ID", 400);
@@ -44,10 +44,10 @@ export async function GET(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: Promise<{ resourceId: string }> },
+  { params }: { params: Promise<{ progressId: string }> },
 ) {
   try {
-    const { resourceId } = await params;
+    const { progressId: resourceId } = await params;
 
     if (!mongoose.Types.ObjectId.isValid(resourceId)) {
       return errorResponse("Invalid resource ID", 400);
