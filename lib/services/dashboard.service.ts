@@ -18,6 +18,16 @@ export interface ProjectCompletionStats {
   projectsCompletionPercentage: number;
 }
 
+export interface ContinueLearningItem {
+  id: string;
+  title: string;
+  type: ResourceType;
+  projectName?: string;
+  progressPercentage: number;
+  subtitle: string;
+  lastAccessedAt: string;
+}
+
 export const getDashboardStats = async (
   userId: string,
 ): Promise<DashboardStats> => {
@@ -131,4 +141,110 @@ export const getProjectCompletionStats = async (
     totalProjects,
     projectsCompletionPercentage,
   };
+};
+
+export const getContinueLearningResources = async (
+  userId: string,
+  limit = 3,
+): Promise<ContinueLearningItem[]> => {
+  await connectToDB();
+
+  // 1. Get user's active/in-progress records sorted by lastAccessedAt DESC (excluding completed resources)
+  const recentProgressList = await Progress.find({
+    userId,
+    status: { $ne: ProgressStatus.COMPLETED },
+    progressPercentage: { $lt: 95 },
+  })
+    .sort({ lastAccessedAt: -1, updatedAt: -1 })
+    .limit(limit)
+    .lean();
+
+  if (recentProgressList.length === 0) {
+    return [];
+  }
+
+  // 2. Fetch linked resources and projects
+  const resourceIds = recentProgressList.map((p) => p.resourceId);
+  const resources = await Resource.find({ _id: { $in: resourceIds } }).lean();
+
+  const projectIds = resources
+    .map((r) => r.projectId)
+    .filter(Boolean);
+
+  const projects = projectIds.length > 0
+    ? await Project.find({ _id: { $in: projectIds } }, { _id: 1, title: 1 }).lean()
+    : [];
+
+  const projectMap = new Map(projects.map((p) => [p._id.toString(), p.title]));
+  const resourceMap = new Map(resources.map((r) => [r._id.toString(), r]));
+
+  const formatDurationStr = (seconds: number): string => {
+    if (!seconds || seconds <= 0) return "0m";
+    const hours = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    if (hours > 0) return `${hours}h ${mins}m`;
+    return `${mins}m`;
+  };
+
+  // 3. Build formatted list preserving progress sorting order
+  const result: ContinueLearningItem[] = [];
+
+  for (const progress of recentProgressList) {
+    const resourceIdStr = progress.resourceId.toString();
+    const resource = resourceMap.get(resourceIdStr);
+
+    if (!resource) continue;
+
+    const projectName = resource.projectId
+      ? projectMap.get(resource.projectId.toString()) || ""
+      : "";
+
+    const progressPercentage = Math.min(
+      100,
+      Math.max(0, Math.round(progress.progressPercentage || 0)),
+    );
+
+    let subtitle = "";
+
+    if (resource.type === ResourceType.YOUTUBE_VIDEO) {
+      const watched = progress.lastWatchedPosition || progress.watchedDuration || 0;
+      const total = resource.totalDuration || resource.youtubeData?.duration || 0;
+      subtitle =
+        total > 0
+          ? `Video • ${formatDurationStr(watched)} of ${formatDurationStr(total)} watched`
+          : `Video • ${progressPercentage}% completed`;
+    } else if (resource.type === ResourceType.PDF) {
+      const pagesRead = progress.pagesRead || progress.lastPageRead || 0;
+      const totalPages = resource.pdfData?.pageCount || 1;
+      subtitle = `PDF • ${pagesRead} of ${totalPages} pages read`;
+    } else if (resource.type === ResourceType.YOUTUBE_PLAYLIST) {
+      const videoProgressArr = (progress as any).videoProgress || [];
+      const completedCount = videoProgressArr.filter((v: any) => v.completed).length;
+      const totalCount =
+        resource.videoCount ||
+        resource.youtubeData?.videos?.length ||
+        videoProgressArr.length ||
+        0;
+      subtitle =
+        totalCount > 0
+          ? `Playlist • ${completedCount} of ${totalCount} videos completed`
+          : `Playlist • ${progressPercentage}% completed`;
+    } else {
+      subtitle = `${progressPercentage}% complete`;
+    }
+
+    result.push({
+      id: resourceIdStr,
+      title: resource.title || "Untitled Resource",
+      type: resource.type as ResourceType,
+      projectName,
+      progressPercentage,
+      subtitle,
+      lastAccessedAt: new Date(
+        progress.lastAccessedAt || (progress as any).updatedAt || Date.now(),
+      ).toISOString(),
+    });
+  }
+
+  return result;
 };

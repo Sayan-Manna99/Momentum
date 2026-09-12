@@ -17,8 +17,10 @@ import {
   BarChart3,
 } from "lucide-react";
 
+import { useRouter } from "next/navigation";
 import { useDashboardStats } from "@/app/hooks/useDashboardStats";
 import { useProjectCompletion } from "@/app/hooks/useProjectCompletion";
+import { useContinueLearning } from "@/app/hooks/useContinueLearning";
 
 /* ─────────────────────────────────────────────
    Animated Background (same as Analytics page)
@@ -101,6 +103,7 @@ const glassCard =
    Dashboard Page
    ───────────────────────────────────────────── */
 export default function DashboardPage() {
+  const router = useRouter();
   const { stats, loading } = useDashboardStats();
   const {
     completionPercentage,
@@ -111,6 +114,7 @@ export default function DashboardPage() {
     projectsCompletionPercentage,
     loading: completionLoading,
   } = useProjectCompletion();
+  const { items: continueItems, loading: continueLoading } = useContinueLearning();
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden">
@@ -213,48 +217,76 @@ export default function DashboardPage() {
               <h3 className="font-semibold text-white/90 text-lg">Continue Learning</h3>
             </div>
 
-            {/* Placeholder resource */}
-            <div className="space-y-4">
-              <div className="rounded-xl border border-white/5 bg-white/[0.03] p-4">
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <p className="text-white/80 font-medium text-sm">React Advanced Patterns</p>
-                    <p className="text-white/40 text-xs mt-1">Video • 12 of 24 completed</p>
-                  </div>
-                  <Play size={16} className="text-blue-400 mt-1" />
-                </div>
-                {/* Progress bar placeholder */}
-                <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
-                  <div className="h-full w-[50%] rounded-full bg-gradient-to-r from-blue-500 to-blue-400" />
-                </div>
-                <div className="flex items-center justify-between mt-3">
-                  <span className="text-white/40 text-xs">50% complete</span>
-                  <button className="text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1">
-                    Continue <ArrowRight size={12} />
-                  </button>
+            {continueLoading ? (
+              <div className="space-y-4">
+                <div className="rounded-xl border border-white/5 bg-white/[0.03] p-4 animate-pulse">
+                  <div className="h-4 bg-white/10 rounded w-1/2 mb-2" />
+                  <div className="h-3 bg-white/5 rounded w-1/3 mb-4" />
+                  <div className="h-2 bg-white/10 rounded w-full mb-3" />
+                  <div className="h-3 bg-white/5 rounded w-1/4" />
                 </div>
               </div>
+            ) : continueItems.length === 0 ? (
+              <div className="rounded-xl border border-white/5 bg-white/[0.03] p-6 text-center">
+                <BookOpen size={36} className="text-white/20 mx-auto mb-2" />
+                <p className="text-white/60 font-medium text-sm">No recent activity</p>
+                <p className="text-white/30 text-xs mt-1">Start learning a resource to see your progress here.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {continueItems.map((item) => {
+                  const isPdf = item.type === "pdf";
+                  const isPlaylist = item.type === "youtube_playlist";
+                  const iconColor = isPdf
+                    ? "text-cyan-400"
+                    : isPlaylist
+                    ? "text-purple-400"
+                    : "text-blue-400";
+                  const barGradient = isPdf
+                    ? "from-cyan-500 to-cyan-400"
+                    : isPlaylist
+                    ? "from-purple-500 to-purple-400"
+                    : "from-blue-500 to-blue-400";
+                  const buttonColor = isPdf
+                    ? "text-cyan-400 hover:text-cyan-300"
+                    : isPlaylist
+                    ? "text-purple-400 hover:text-purple-300"
+                    : "text-blue-400 hover:text-blue-300";
 
-              <div className="rounded-xl border border-white/5 bg-white/[0.03] p-4">
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <p className="text-white/80 font-medium text-sm">System Design Fundamentals</p>
-                    <p className="text-white/40 text-xs mt-1">PDF • 8 of 15 pages read</p>
-                  </div>
-                  <FileText size={16} className="text-cyan-400 mt-1" />
-                </div>
-                {/* Progress bar placeholder */}
-                <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
-                  <div className="h-full w-[53%] rounded-full bg-gradient-to-r from-cyan-500 to-cyan-400" />
-                </div>
-                <div className="flex items-center justify-between mt-3">
-                  <span className="text-white/40 text-xs">53% complete</span>
-                  <button className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors flex items-center gap-1">
-                    Continue <ArrowRight size={12} />
-                  </button>
-                </div>
+                  return (
+                    <div key={item.id} className="rounded-xl border border-white/5 bg-white/[0.03] p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="min-w-0 flex-1 pr-2">
+                          <p className="text-white/80 font-medium text-sm truncate">{item.title}</p>
+                          <p className="text-white/40 text-xs mt-1 truncate">{item.subtitle}</p>
+                        </div>
+                        {isPdf ? (
+                          <FileText size={16} className={`${iconColor} mt-1 flex-shrink-0`} />
+                        ) : (
+                          <Play size={16} className={`${iconColor} mt-1 flex-shrink-0`} />
+                        )}
+                      </div>
+                      {/* Progress bar */}
+                      <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full bg-gradient-to-r ${barGradient}`}
+                          style={{ width: `${Math.min(100, Math.max(0, item.progressPercentage))}%` }}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between mt-3">
+                        <span className="text-white/40 text-xs">{item.progressPercentage}% complete</span>
+                        <button
+                          onClick={() => router.push(`/resources/${item.id}`)}
+                          className={`text-xs ${buttonColor} transition-colors flex items-center gap-1 cursor-pointer`}
+                        >
+                          Continue <ArrowRight size={12} />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            </div>
+            )}
           </div>
 
           {/* Right — Project Completion */}
