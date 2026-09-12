@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 
 import { useDashboardStats } from "@/app/hooks/useDashboardStats";
+import { useProjectCompletion } from "@/app/hooks/useProjectCompletion";
 
 /* ─────────────────────────────────────────────
    Animated Background (same as Analytics page)
@@ -101,6 +102,15 @@ const glassCard =
    ───────────────────────────────────────────── */
 export default function DashboardPage() {
   const { stats, loading } = useDashboardStats();
+  const {
+    completionPercentage,
+    completedResources,
+    totalResources,
+    completedProjects,
+    totalProjects,
+    projectsCompletionPercentage,
+    loading: completionLoading,
+  } = useProjectCompletion();
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden">
@@ -254,12 +264,120 @@ export default function DashboardPage() {
               <h3 className="font-semibold text-white/90 text-lg">Project Completion</h3>
             </div>
 
-            {/* Chart placeholder */}
-            <div className="w-full aspect-[4/3] rounded-xl border border-white/5 bg-white/[0.03] flex items-center justify-center">
-              <div className="text-center">
-                <BarChart3 size={48} className="text-white/20 mx-auto mb-3" />
-                <p className="text-white/30 text-sm">Completion chart placeholder</p>
-              </div>
+            {/* Donut Charts Container (Side-by-Side) */}
+            <div className="w-full min-h-[280px] rounded-xl border border-white/5 bg-white/[0.03] flex flex-col justify-center p-4 sm:p-6 relative overflow-hidden">
+              {completionLoading ? (
+                <div className="text-center py-10">
+                  <BarChart3 size={56} className="text-white/20 mx-auto mb-3 animate-pulse" />
+                  <p className="text-white/30 text-sm">Loading project completion...</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-4 items-center h-full">
+                  {/* Left Chart — Resource Completion */}
+                  <div className="flex flex-col items-center justify-center space-y-3">
+                    <div className="relative w-32 h-32 sm:w-36 sm:h-36 flex items-center justify-center">
+                      <svg className="w-full h-full transform -rotate-90" viewBox="0 0 120 120">
+                        {/* Track circle */}
+                        <circle
+                          cx="60"
+                          cy="60"
+                          r="48"
+                          className="text-white/10"
+                          strokeWidth="10"
+                          stroke="currentColor"
+                          fill="transparent"
+                        />
+                        {/* Progress circle */}
+                        <circle
+                          cx="60"
+                          cy="60"
+                          r="48"
+                          className="text-purple-500 transition-all duration-1000 ease-out"
+                          strokeWidth="10"
+                          strokeDasharray={2 * Math.PI * 48}
+                          strokeDashoffset={
+                            2 * Math.PI * 48 * (1 - Math.min(100, Math.max(0, completionPercentage)) / 100)
+                          }
+                          strokeLinecap="round"
+                          stroke="currentColor"
+                          fill="transparent"
+                        />
+                      </svg>
+
+                      {/* Center Percentage */}
+                      <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                        <span className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+                          {completionPercentage}%
+                        </span>
+                        <span className="text-[10px] uppercase tracking-wider text-purple-300/70 font-semibold mt-0.5">
+                          Resources
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="text-center">
+                      <p className="text-white/80 text-xs sm:text-sm font-semibold">
+                        Resource Completion
+                      </p>
+                      <p className="text-white/40 text-xs mt-0.5">
+                        {completedResources} of {totalResources} resources
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Right Chart — Full Projects Completed */}
+                  <div className="flex flex-col items-center justify-center space-y-3 sm:border-l sm:border-white/10 sm:pl-4">
+                    <div className="relative w-32 h-32 sm:w-36 sm:h-36 flex items-center justify-center">
+                      <svg className="w-full h-full transform -rotate-90" viewBox="0 0 120 120">
+                        {/* Track circle */}
+                        <circle
+                          cx="60"
+                          cy="60"
+                          r="48"
+                          className="text-white/10"
+                          strokeWidth="10"
+                          stroke="currentColor"
+                          fill="transparent"
+                        />
+                        {/* Progress circle */}
+                        <circle
+                          cx="60"
+                          cy="60"
+                          r="48"
+                          className="text-emerald-400 transition-all duration-1000 ease-out"
+                          strokeWidth="10"
+                          strokeDasharray={2 * Math.PI * 48}
+                          strokeDashoffset={
+                            2 * Math.PI * 48 * (1 - Math.min(100, Math.max(0, projectsCompletionPercentage)) / 100)
+                          }
+                          strokeLinecap="round"
+                          stroke="currentColor"
+                          fill="transparent"
+                        />
+                      </svg>
+
+                      {/* Center Stats */}
+                      <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                        <span className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+                          {completedProjects}/{totalProjects}
+                        </span>
+                        <span className="text-[10px] uppercase tracking-wider text-emerald-300/70 font-semibold mt-0.5">
+                          Projects
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="text-center">
+                      <p className="text-white/80 text-xs sm:text-sm font-semibold">
+                        Full Projects Completed
+                      </p>
+                      <p className="text-white/40 text-xs mt-0.5">
+                        {projectsCompletionPercentage}% of total projects
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </section>
