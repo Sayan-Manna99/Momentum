@@ -17,6 +17,8 @@ import {
   BarChart3,
 } from "lucide-react";
 
+import { useDashboardStats } from "@/app/hooks/useDashboardStats";
+
 /* ─────────────────────────────────────────────
    Animated Background (same as Analytics page)
    ───────────────────────────────────────────── */
@@ -98,6 +100,8 @@ const glassCard =
    Dashboard Page
    ───────────────────────────────────────────── */
 export default function DashboardPage() {
+  const { stats, loading } = useDashboardStats();
+
   return (
     <div className="relative min-h-screen w-full overflow-hidden">
       <AnimatedBackground />
@@ -141,7 +145,7 @@ export default function DashboardPage() {
               <FolderOpen size={22} className="text-blue-400/60 group-hover:text-blue-400 transition-colors duration-300" />
             </div>
             <h2 className="mt-4 text-4xl md:text-[2.7rem] font-semibold tracking-tight text-blue-400">
-              12
+              {loading ? "..." : (stats?.activeProjects ?? 0)}
             </h2>
           </div>
 
@@ -154,7 +158,7 @@ export default function DashboardPage() {
               <Play size={22} className="text-purple-400/60 group-hover:text-purple-400 transition-colors duration-300" />
             </div>
             <h2 className="mt-4 text-4xl md:text-[2.7rem] font-semibold tracking-tight text-purple-400">
-              48
+              {loading ? "..." : (stats?.videosWatched ?? 0)}
             </h2>
           </div>
 
@@ -167,7 +171,7 @@ export default function DashboardPage() {
               <FileText size={22} className="text-cyan-400/60 group-hover:text-cyan-400 transition-colors duration-300" />
             </div>
             <h2 className="mt-4 text-4xl md:text-[2.7rem] font-semibold tracking-tight text-cyan-400">
-              23
+              {loading ? "..." : (stats?.pdfsCompleted ?? 0)}
             </h2>
           </div>
 
@@ -179,9 +183,12 @@ export default function DashboardPage() {
               </p>
               <Award size={22} className="text-green-400/60 group-hover:text-green-400 transition-colors duration-300" />
             </div>
-            <h2 className="mt-4 text-4xl md:text-[2.7rem] font-semibold tracking-tight text-green-400">
-              87%
-            </h2>
+            <div>
+              <h2 className="mt-4 text-4xl md:text-[2.7rem] font-semibold tracking-tight text-green-400">
+                —
+              </h2>
+              <p className="text-xs text-white/40 mt-1">Coming soon</p>
+            </div>
           </div>
         </section>
 
