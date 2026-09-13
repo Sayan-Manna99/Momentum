@@ -18,9 +18,11 @@ import {
 } from "lucide-react";
 
 import { useRouter } from "next/navigation";
+import { formatDistanceToNow } from "date-fns";
 import { useDashboardStats } from "@/app/hooks/useDashboardStats";
 import { useProjectCompletion } from "@/app/hooks/useProjectCompletion";
 import { useContinueLearning } from "@/app/hooks/useContinueLearning";
+import { useActiveProjects } from "@/app/hooks/useActiveProjects";
 
 /* ─────────────────────────────────────────────
    Animated Background (same as Analytics page)
@@ -115,6 +117,7 @@ export default function DashboardPage() {
     loading: completionLoading,
   } = useProjectCompletion();
   const { items: continueItems, loading: continueLoading } = useContinueLearning();
+  const { projects: activeProjectsList, loading: activeProjectsLoading } = useActiveProjects();
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden">
@@ -423,69 +426,69 @@ export default function DashboardPage() {
               <Layers size={20} className="text-yellow-400" />
               <h3 className="font-semibold text-white/90 text-lg">Active Projects</h3>
             </div>
-            <button className="text-xs text-white/50 hover:text-white/80 transition-colors flex items-center gap-1">
+            <button
+              onClick={() => router.push("/projects")}
+              className="text-xs text-white/50 hover:text-white/80 transition-colors flex items-center gap-1 cursor-pointer"
+            >
               View All <ChevronRight size={14} />
             </button>
           </div>
 
           {/* Project rows */}
-          <div className="space-y-3">
-            {/* Row 1 */}
-            <div className="rounded-xl border border-white/5 bg-white/[0.03] p-4 flex flex-col sm:flex-row sm:items-center gap-4">
-              <div className="flex-1 min-w-0">
-                <p className="text-white/80 font-medium text-sm truncate">Full-Stack Development Bootcamp</p>
-                <p className="text-white/40 text-xs mt-1">18 resources • Updated 2 hours ago</p>
-              </div>
-              <div className="flex items-center gap-4 sm:w-[200px]">
-                <div className="flex-1 h-2 rounded-full bg-white/10 overflow-hidden">
-                  <div className="h-full w-[72%] rounded-full bg-gradient-to-r from-green-500 to-green-400" />
-                </div>
-                <span className="text-green-400 text-xs font-medium w-10 text-right">72%</span>
-              </div>
+          {activeProjectsLoading ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="rounded-xl border border-white/5 bg-white/[0.03] p-4 animate-pulse h-16" />
+              ))}
             </div>
+          ) : activeProjectsList.length === 0 ? (
+            <div className="rounded-xl border border-white/5 bg-white/[0.03] p-8 text-center">
+              <FolderOpen size={36} className="text-white/20 mx-auto mb-2" />
+              <p className="text-white/60 font-medium text-sm">No active projects</p>
+              <p className="text-white/30 text-xs mt-1">Create a project to start tracking your learning progress.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {activeProjectsList.map((project, index) => {
+                const colorStyles = [
+                  { bar: "from-green-500 to-green-400", text: "text-green-400" },
+                  { bar: "from-yellow-500 to-yellow-400", text: "text-yellow-400" },
+                  { bar: "from-blue-500 to-blue-400", text: "text-blue-400" },
+                ][index % 3];
 
-            {/* Row 2 */}
-            <div className="rounded-xl border border-white/5 bg-white/[0.03] p-4 flex flex-col sm:flex-row sm:items-center gap-4">
-              <div className="flex-1 min-w-0">
-                <p className="text-white/80 font-medium text-sm truncate">Machine Learning Foundations</p>
-                <p className="text-white/40 text-xs mt-1">24 resources • Updated 1 day ago</p>
-              </div>
-              <div className="flex items-center gap-4 sm:w-[200px]">
-                <div className="flex-1 h-2 rounded-full bg-white/10 overflow-hidden">
-                  <div className="h-full w-[45%] rounded-full bg-gradient-to-r from-yellow-500 to-yellow-400" />
-                </div>
-                <span className="text-yellow-400 text-xs font-medium w-10 text-right">45%</span>
-              </div>
-            </div>
+                const timeAgo = project.updatedAt
+                  ? formatDistanceToNow(new Date(project.updatedAt), { addSuffix: true })
+                  : "";
 
-            {/* Row 3 */}
-            <div className="rounded-xl border border-white/5 bg-white/[0.03] p-4 flex flex-col sm:flex-row sm:items-center gap-4">
-              <div className="flex-1 min-w-0">
-                <p className="text-white/80 font-medium text-sm truncate">UI/UX Design Principles</p>
-                <p className="text-white/40 text-xs mt-1">9 resources • Updated 3 days ago</p>
-              </div>
-              <div className="flex items-center gap-4 sm:w-[200px]">
-                <div className="flex-1 h-2 rounded-full bg-white/10 overflow-hidden">
-                  <div className="h-full w-[88%] rounded-full bg-gradient-to-r from-blue-500 to-blue-400" />
-                </div>
-                <span className="text-blue-400 text-xs font-medium w-10 text-right">88%</span>
-              </div>
+                return (
+                  <div
+                    key={project.id}
+                    onClick={() => router.push(`/projects/${project.id}`)}
+                    className="rounded-xl border border-white/5 bg-white/[0.03] p-4 flex flex-col sm:flex-row sm:items-center gap-4 hover:bg-white/[0.06] transition-colors cursor-pointer"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white/80 font-medium text-sm truncate">{project.title}</p>
+                      <p className="text-white/40 text-xs mt-1">
+                        {project.totalResources} {project.totalResources === 1 ? "resource" : "resources"}
+                        {timeAgo ? ` • Updated ${timeAgo}` : ""}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-4 sm:w-[200px]">
+                      <div className="flex-1 h-2 rounded-full bg-white/10 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full bg-gradient-to-r ${colorStyles.bar}`}
+                          style={{ width: `${Math.min(100, Math.max(0, project.progressPercentage))}%` }}
+                        />
+                      </div>
+                      <span className={`${colorStyles.text} text-xs font-medium w-10 text-right`}>
+                        {project.progressPercentage}%
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-
-            {/* Row 4 */}
-            <div className="rounded-xl border border-white/5 bg-white/[0.03] p-4 flex flex-col sm:flex-row sm:items-center gap-4">
-              <div className="flex-1 min-w-0">
-                <p className="text-white/80 font-medium text-sm truncate">Data Structures & Algorithms</p>
-                <p className="text-white/40 text-xs mt-1">32 resources • Updated 5 days ago</p>
-              </div>
-              <div className="flex items-center gap-4 sm:w-[200px]">
-                <div className="flex-1 h-2 rounded-full bg-white/10 overflow-hidden">
-                  <div className="h-full w-[30%] rounded-full bg-gradient-to-r from-red-500 to-orange-400" />
-                </div>
-                <span className="text-orange-400 text-xs font-medium w-10 text-right">30%</span>
-              </div>
-            </div>
-          </div>
+          )}
         </section>
 
         {/* ══════════════════════════════════════

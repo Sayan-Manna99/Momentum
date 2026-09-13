@@ -28,6 +28,15 @@ export interface ContinueLearningItem {
   lastAccessedAt: string;
 }
 
+export interface ActiveProjectItem {
+  id: string;
+  title: string;
+  totalResources: number;
+  completedResources: number;
+  progressPercentage: number;
+  updatedAt: string;
+}
+
 export const getDashboardStats = async (
   userId: string,
 ): Promise<DashboardStats> => {
@@ -247,4 +256,63 @@ export const getContinueLearningResources = async (
   }
 
   return result;
+};
+
+export const getTopActiveProjects = async (
+  userId: string,
+  limit = 3,
+): Promise<ActiveProjectItem[]> => {
+  await connectToDB();
+
+  // Find active projects for user sorted by updatedAt DESC
+  const projects = await Project.find({
+    userId,
+    status: { $nin: [ProjectStatus.COMPLETED, ProjectStatus.ARCHIVED] },
+  })
+    .sort({ updatedAt: -1, createdAt: -1 })
+    .limit(limit)
+    .lean();
+
+  if (projects.length === 0) {
+    return [];
+  }
+
+  const enriched = await Promise.all(
+    projects.map(async (project) => {
+      const resources = await Resource.find(
+        { projectId: project._id },
+        { _id: 1 },
+      ).lean();
+
+      const totalResources = resources.length;
+      let completedResources = 0;
+
+      if (totalResources > 0) {
+        completedResources = await Progress.countDocuments({
+          userId,
+          projectId: project._id,
+          $or: [
+            { status: ProgressStatus.COMPLETED },
+            { progressPercentage: { $gte: 95 } },
+          ],
+        });
+      }
+
+      const progressPercentage =
+        totalResources > 0
+          ? Math.min(100, Math.max(0, Math.round((completedResources / totalResources) * 100)))
+          : 0;
+
+      return {
+        id: project._id.toString(),
+        title: project.title,
+        totalResources,
+        completedResources,
+        progressPercentage,
+        updatedAt: new Date(project.updatedAt || project.createdAt).toISOString(),
+      };
+    }),
+  );
+
+  return enriched;
 };
