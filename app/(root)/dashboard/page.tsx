@@ -954,7 +954,10 @@ export default function DashboardPage() {
           </div>
 
           {/* Right button */}
-          <button className="flex-shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-b from-blue-400 to-blue-600 hover:from-blue-600 hover:to-blue-400 text-white font-medium text-sm shadow-lg transition-all duration-300 cursor-pointer">
+          <button
+            className="flex-shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-b from-blue-400 to-blue-600 hover:from-blue-600 hover:to-blue-400 text-white font-medium text-sm shadow-lg transition-all duration-300 cursor-pointer"
+            onClick={() => router.push("/projects")}
+          >
             <Plus size={16} />
             Create Project
           </button>
