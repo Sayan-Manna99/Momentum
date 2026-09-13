@@ -51,6 +51,14 @@ export interface RecentActivityItem {
   icon?: string;
 }
 
+export interface UpcomingDeadlineItem {
+  id: string;
+  projectName: string;
+  deadline: string; // ISO string
+  daysRemaining: number;
+  urgency: "critical" | "high" | "medium" | "low";
+}
+
 export const getDashboardStats = async (
   userId: string,
 ): Promise<DashboardStats> => {
@@ -509,4 +517,53 @@ export const getRecentActivities = async (
   });
 
   return activities.slice(0, limit);
+};
+
+export const getUpcomingDeadlines = async (
+  userId: string,
+  limit = 4,
+): Promise<UpcomingDeadlineItem[]> => {
+  await connectToDB();
+
+  const now = new Date();
+  now.setHours(0, 0, 0, 0); // Start of today
+
+  // Find all projects with targetEndDate in the future, belonging to the user
+  const projects = await Project.find({
+    userId,
+    targetEndDate: { $gte: now },
+    status: { $ne: ProjectStatus.COMPLETED }, // Don't show completed projects
+  })
+    .sort({ targetEndDate: 1 }) // Sort by deadline ascending (nearest first)
+    .limit(limit)
+    .lean();
+
+  // Calculate deadlines
+  const deadlines: UpcomingDeadlineItem[] = projects.map((project) => {
+    const deadline = new Date(project.targetEndDate);
+    const differenceInMs = deadline.getTime() - now.getTime();
+    const daysRemaining = Math.ceil(differenceInMs / (1000 * 60 * 60 * 24));
+
+    // Determine urgency based on days remaining
+    let urgency: "critical" | "high" | "medium" | "low";
+    if (daysRemaining <= 2) {
+      urgency = "critical";
+    } else if (daysRemaining <= 7) {
+      urgency = "high";
+    } else if (daysRemaining <= 14) {
+      urgency = "medium";
+    } else {
+      urgency = "low";
+    }
+
+    return {
+      id: project._id.toString(),
+      projectName: project.title,
+      deadline: deadline.toISOString(),
+      daysRemaining: Math.max(0, daysRemaining),
+      urgency,
+    };
+  });
+
+  return deadlines;
 };

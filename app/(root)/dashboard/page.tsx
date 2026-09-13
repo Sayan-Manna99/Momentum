@@ -18,12 +18,13 @@ import {
 } from "lucide-react";
 
 import { useRouter } from "next/navigation";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, format } from "date-fns";
 import { useDashboardStats } from "@/app/hooks/useDashboardStats";
 import { useProjectCompletion } from "@/app/hooks/useProjectCompletion";
 import { useContinueLearning } from "@/app/hooks/useContinueLearning";
 import { useActiveProjects } from "@/app/hooks/useActiveProjects";
 import { useRecentActivity } from "@/app/hooks/useRecentActivity";
+import { useUpcomingDeadlines } from "@/app/hooks/useUpcomingDeadlines";
 
 /* ─────────────────────────────────────────────
    Animated Background (same as Analytics page)
@@ -287,6 +288,8 @@ export default function DashboardPage() {
     useActiveProjects();
   const { activities: recentActivities, loading: activitiesLoading } =
     useRecentActivity();
+  const { deadlines: upcomingDeadlines, loading: deadlinesLoading } =
+    useUpcomingDeadlines();
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden">
@@ -856,50 +859,74 @@ export default function DashboardPage() {
             </div>
 
             <div className="space-y-4">
-              {[
-                {
-                  title: "ML Foundations — Module 3 Quiz",
-                  date: "Sep 12, 2026",
-                  urgency: "text-red-400",
-                  badge: "2 days left",
-                },
-                {
-                  title: "React Project — Final Submission",
-                  date: "Sep 15, 2026",
-                  urgency: "text-yellow-400",
-                  badge: "5 days left",
-                },
-                {
-                  title: "DSA Practice Set — Week 4",
-                  date: "Sep 18, 2026",
-                  urgency: "text-white/50",
-                  badge: "8 days left",
-                },
-                {
-                  title: "Design Review — Portfolio Project",
-                  date: "Sep 22, 2026",
-                  urgency: "text-white/50",
-                  badge: "12 days left",
-                },
-              ].map((item, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-3 rounded-xl border border-white/5 bg-white/[0.03] p-3"
-                >
-                  <CalendarDays size={16} className={item.urgency} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-white/70 text-sm font-medium truncate">
-                      {item.title}
-                    </p>
-                    <p className="text-white/40 text-xs mt-0.5">{item.date}</p>
-                  </div>
-                  <span
-                    className={`text-xs font-medium ${item.urgency} whitespace-nowrap`}
-                  >
-                    {item.badge}
-                  </span>
+              {deadlinesLoading ? (
+                <div className="space-y-3">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div
+                      key={i}
+                      className="flex items-center gap-3 rounded-xl border border-white/5 bg-white/[0.03] p-3 animate-pulse h-16"
+                    />
+                  ))}
                 </div>
-              ))}
+              ) : upcomingDeadlines.length === 0 ? (
+                <div className="rounded-xl border border-white/5 bg-white/[0.03] p-6 text-center">
+                  <CalendarDays
+                    size={36}
+                    className="text-white/20 mx-auto mb-2"
+                  />
+                  <p className="text-white/60 font-medium text-sm">
+                    No upcoming deadlines
+                  </p>
+                  <p className="text-white/30 text-xs mt-1">
+                    All your projects are on track or completed.
+                  </p>
+                </div>
+              ) : (
+                upcomingDeadlines.map((deadline) => {
+                  // Determine color based on urgency
+                  let urgencyClass = "text-white/50";
+                  if (deadline.urgency === "critical") {
+                    urgencyClass = "text-red-400";
+                  } else if (deadline.urgency === "high") {
+                    urgencyClass = "text-yellow-400";
+                  } else if (deadline.urgency === "medium") {
+                    urgencyClass = "text-orange-400";
+                  }
+
+                  // Format deadline date
+                  const deadlineDate = new Date(deadline.deadline);
+                  const formattedDate = format(deadlineDate, "MMM dd, yyyy");
+
+                  // Format days remaining
+                  const daysText =
+                    deadline.daysRemaining === 1
+                      ? "1 day left"
+                      : `${deadline.daysRemaining} days left`;
+
+                  return (
+                    <div
+                      key={deadline.id}
+                      className="flex items-center gap-3 rounded-xl border border-white/5 bg-white/[0.03] p-3 hover:bg-white/[0.06] transition-colors cursor-pointer"
+                      onClick={() => router.push(`/projects/${deadline.id}`)}
+                    >
+                      <CalendarDays size={16} className={urgencyClass} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white/70 text-sm font-medium truncate">
+                          {deadline.projectName}
+                        </p>
+                        <p className="text-white/40 text-xs mt-0.5">
+                          {formattedDate}
+                        </p>
+                      </div>
+                      <span
+                        className={`text-xs font-medium ${urgencyClass} whitespace-nowrap`}
+                      >
+                        {daysText}
+                      </span>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
         </section>
