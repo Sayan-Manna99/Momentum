@@ -23,39 +23,204 @@ import { useDashboardStats } from "@/app/hooks/useDashboardStats";
 import { useProjectCompletion } from "@/app/hooks/useProjectCompletion";
 import { useContinueLearning } from "@/app/hooks/useContinueLearning";
 import { useActiveProjects } from "@/app/hooks/useActiveProjects";
+import { useRecentActivity } from "@/app/hooks/useRecentActivity";
 
 /* ─────────────────────────────────────────────
    Animated Background (same as Analytics page)
    ───────────────────────────────────────────── */
 const AnimatedBackground = () => {
   const items = [
-    { id: 1, text: "+", left: "10%", top: "20%", animationDuration: "15s", animationDelay: "0s", fontSize: "3rem", color: "#60a5fa", textShadow: "0 0 20px rgba(96, 165, 250, 0.8)" },
-    { id: 2, text: "×", left: "80%", top: "15%", animationDuration: "25s", animationDelay: "2s", fontSize: "4rem", color: "#a78bfa", textShadow: "0 0 20px rgba(167, 139, 250, 0.8)" },
-    { id: 3, text: "÷", left: "40%", top: "60%", animationDuration: "20s", animationDelay: "5s", fontSize: "2.5rem", color: "#22d3ee", textShadow: "0 0 20px rgba(34, 211, 238, 0.8)" },
-    { id: 4, text: "=", left: "70%", top: "80%", animationDuration: "18s", animationDelay: "1s", fontSize: "3.5rem", color: "#f472b6", textShadow: "0 0 20px rgba(244, 114, 182, 0.8)" },
-    { id: 5, text: "%", left: "20%", top: "75%", animationDuration: "22s", animationDelay: "3s", fontSize: "5rem", color: "#60a5fa", textShadow: "0 0 20px rgba(96, 165, 250, 0.8)" },
-    { id: 6, text: "[]", left: "50%", top: "30%", animationDuration: "30s", animationDelay: "0s", fontSize: "3rem", color: "#a78bfa", textShadow: "0 0 20px rgba(167, 139, 250, 0.8)" },
-    { id: 7, text: "{}", left: "90%", top: "50%", animationDuration: "24s", animationDelay: "4s", fontSize: "3.5rem", color: "#22d3ee", textShadow: "0 0 20px rgba(34, 211, 238, 0.8)" },
-    { id: 8, text: "<>", left: "15%", top: "45%", animationDuration: "28s", animationDelay: "1s", fontSize: "2.5rem", color: "#f472b6", textShadow: "0 0 20px rgba(244, 114, 182, 0.8)" },
-    { id: 9, text: "0", left: "60%", top: "10%", animationDuration: "19s", animationDelay: "2s", fontSize: "2.8rem", color: "#60a5fa", textShadow: "0 0 20px rgba(96, 165, 250, 0.8)" },
-    { id: 10, text: "1", left: "85%", top: "85%", animationDuration: "26s", animationDelay: "6s", fontSize: "3.2rem", color: "#a78bfa", textShadow: "0 0 20px rgba(167, 139, 250, 0.8)" },
-    { id: 11, text: "■", left: "5%", top: "85%", animationDuration: "35s", animationDelay: "0s", fontSize: "2rem", color: "#22d3ee", textShadow: "0 0 20px rgba(34, 211, 238, 0.8)" },
-    { id: 12, text: "▲", left: "30%", top: "10%", animationDuration: "21s", animationDelay: "5s", fontSize: "2rem", color: "#f472b6", textShadow: "0 0 20px rgba(244, 114, 182, 0.8)" },
-    { id: 13, text: "●", left: "55%", top: "90%", animationDuration: "27s", animationDelay: "2s", fontSize: "2.5rem", color: "#60a5fa", textShadow: "0 0 20px rgba(96, 165, 250, 0.8)" },
-    { id: 14, text: "◆", left: "35%", top: "40%", animationDuration: "23s", animationDelay: "7s", fontSize: "3rem", color: "#a78bfa", textShadow: "0 0 20px rgba(167, 139, 250, 0.8)" },
-    { id: 15, text: "⬢", left: "75%", top: "40%", animationDuration: "32s", animationDelay: "1s", fontSize: "4rem", color: "#22d3ee", textShadow: "0 0 20px rgba(34, 211, 238, 0.8)" },
-    { id: 16, text: "≈", left: "25%", top: "55%", animationDuration: "17s", animationDelay: "4s", fontSize: "3.5rem", color: "#f472b6", textShadow: "0 0 20px rgba(244, 114, 182, 0.8)" },
+    {
+      id: 1,
+      text: "+",
+      left: "10%",
+      top: "20%",
+      animationDuration: "15s",
+      animationDelay: "0s",
+      fontSize: "3rem",
+      color: "#60a5fa",
+      textShadow: "0 0 20px rgba(96, 165, 250, 0.8)",
+    },
+    {
+      id: 2,
+      text: "×",
+      left: "80%",
+      top: "15%",
+      animationDuration: "25s",
+      animationDelay: "2s",
+      fontSize: "4rem",
+      color: "#a78bfa",
+      textShadow: "0 0 20px rgba(167, 139, 250, 0.8)",
+    },
+    {
+      id: 3,
+      text: "÷",
+      left: "40%",
+      top: "60%",
+      animationDuration: "20s",
+      animationDelay: "5s",
+      fontSize: "2.5rem",
+      color: "#22d3ee",
+      textShadow: "0 0 20px rgba(34, 211, 238, 0.8)",
+    },
+    {
+      id: 4,
+      text: "=",
+      left: "70%",
+      top: "80%",
+      animationDuration: "18s",
+      animationDelay: "1s",
+      fontSize: "3.5rem",
+      color: "#f472b6",
+      textShadow: "0 0 20px rgba(244, 114, 182, 0.8)",
+    },
+    {
+      id: 5,
+      text: "%",
+      left: "20%",
+      top: "75%",
+      animationDuration: "22s",
+      animationDelay: "3s",
+      fontSize: "5rem",
+      color: "#60a5fa",
+      textShadow: "0 0 20px rgba(96, 165, 250, 0.8)",
+    },
+    {
+      id: 6,
+      text: "[]",
+      left: "50%",
+      top: "30%",
+      animationDuration: "30s",
+      animationDelay: "0s",
+      fontSize: "3rem",
+      color: "#a78bfa",
+      textShadow: "0 0 20px rgba(167, 139, 250, 0.8)",
+    },
+    {
+      id: 7,
+      text: "{}",
+      left: "90%",
+      top: "50%",
+      animationDuration: "24s",
+      animationDelay: "4s",
+      fontSize: "3.5rem",
+      color: "#22d3ee",
+      textShadow: "0 0 20px rgba(34, 211, 238, 0.8)",
+    },
+    {
+      id: 8,
+      text: "<>",
+      left: "15%",
+      top: "45%",
+      animationDuration: "28s",
+      animationDelay: "1s",
+      fontSize: "2.5rem",
+      color: "#f472b6",
+      textShadow: "0 0 20px rgba(244, 114, 182, 0.8)",
+    },
+    {
+      id: 9,
+      text: "0",
+      left: "60%",
+      top: "10%",
+      animationDuration: "19s",
+      animationDelay: "2s",
+      fontSize: "2.8rem",
+      color: "#60a5fa",
+      textShadow: "0 0 20px rgba(96, 165, 250, 0.8)",
+    },
+    {
+      id: 10,
+      text: "1",
+      left: "85%",
+      top: "85%",
+      animationDuration: "26s",
+      animationDelay: "6s",
+      fontSize: "3.2rem",
+      color: "#a78bfa",
+      textShadow: "0 0 20px rgba(167, 139, 250, 0.8)",
+    },
+    {
+      id: 11,
+      text: "■",
+      left: "5%",
+      top: "85%",
+      animationDuration: "35s",
+      animationDelay: "0s",
+      fontSize: "2rem",
+      color: "#22d3ee",
+      textShadow: "0 0 20px rgba(34, 211, 238, 0.8)",
+    },
+    {
+      id: 12,
+      text: "▲",
+      left: "30%",
+      top: "10%",
+      animationDuration: "21s",
+      animationDelay: "5s",
+      fontSize: "2rem",
+      color: "#f472b6",
+      textShadow: "0 0 20px rgba(244, 114, 182, 0.8)",
+    },
+    {
+      id: 13,
+      text: "●",
+      left: "55%",
+      top: "90%",
+      animationDuration: "27s",
+      animationDelay: "2s",
+      fontSize: "2.5rem",
+      color: "#60a5fa",
+      textShadow: "0 0 20px rgba(96, 165, 250, 0.8)",
+    },
+    {
+      id: 14,
+      text: "◆",
+      left: "35%",
+      top: "40%",
+      animationDuration: "23s",
+      animationDelay: "7s",
+      fontSize: "3rem",
+      color: "#a78bfa",
+      textShadow: "0 0 20px rgba(167, 139, 250, 0.8)",
+    },
+    {
+      id: 15,
+      text: "⬢",
+      left: "75%",
+      top: "40%",
+      animationDuration: "32s",
+      animationDelay: "1s",
+      fontSize: "4rem",
+      color: "#22d3ee",
+      textShadow: "0 0 20px rgba(34, 211, 238, 0.8)",
+    },
+    {
+      id: 16,
+      text: "≈",
+      left: "25%",
+      top: "55%",
+      animationDuration: "17s",
+      animationDelay: "4s",
+      fontSize: "3.5rem",
+      color: "#f472b6",
+      textShadow: "0 0 20px rgba(244, 114, 182, 0.8)",
+    },
   ];
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         @keyframes float-rotate {
           0% { transform: translateY(0) rotate(0deg); opacity: 0.2; }
           50% { transform: translateY(-20px) rotate(180deg); opacity: 0.7; }
           100% { transform: translateY(0) rotate(360deg); opacity: 0.2; }
         }
-      `}} />
+      `,
+        }}
+      />
 
       {/* Dark grid */}
       <div
@@ -116,8 +281,12 @@ export default function DashboardPage() {
     projectsCompletionPercentage,
     loading: completionLoading,
   } = useProjectCompletion();
-  const { items: continueItems, loading: continueLoading } = useContinueLearning();
-  const { projects: activeProjectsList, loading: activeProjectsLoading } = useActiveProjects();
+  const { items: continueItems, loading: continueLoading } =
+    useContinueLearning();
+  const { projects: activeProjectsList, loading: activeProjectsLoading } =
+    useActiveProjects();
+  const { activities: recentActivities, loading: activitiesLoading } =
+    useRecentActivity();
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden">
@@ -141,7 +310,8 @@ export default function DashboardPage() {
           {/* Right — Motivational Quote */}
           <div className={`${glassCard} max-w-md`}>
             <p className="text-white/70 text-sm italic leading-relaxed">
-              &ldquo;The only way to do great work is to love what you learn.&rdquo;
+              &ldquo;The only way to do great work is to love what you
+              learn.&rdquo;
             </p>
             <p className="text-white/40 text-xs mt-2 text-right">
               — Daily Motivation
@@ -154,12 +324,17 @@ export default function DashboardPage() {
            ══════════════════════════════════════ */}
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Active Projects */}
-          <div className={`${glassCard} group min-h-[140px] flex flex-col justify-between hover:bg-neutral-400/40 hover:border-white/20`}>
+          <div
+            className={`${glassCard} group min-h-[140px] flex flex-col justify-between hover:bg-neutral-400/40 hover:border-white/20`}
+          >
             <div className="flex items-start justify-between">
               <p className="text-xs font-medium uppercase tracking-widest text-blue-400/60 group-hover:text-blue-400 transition-colors duration-300">
                 Active Projects
               </p>
-              <FolderOpen size={22} className="text-blue-400/60 group-hover:text-blue-400 transition-colors duration-300" />
+              <FolderOpen
+                size={22}
+                className="text-blue-400/60 group-hover:text-blue-400 transition-colors duration-300"
+              />
             </div>
             <h2 className="mt-4 text-4xl md:text-[2.7rem] font-semibold tracking-tight text-blue-400">
               {loading ? "..." : (stats?.activeProjects ?? 0)}
@@ -167,12 +342,17 @@ export default function DashboardPage() {
           </div>
 
           {/* Videos Watched */}
-          <div className={`${glassCard} group min-h-[140px] flex flex-col justify-between hover:bg-neutral-400/40 hover:border-white/20`}>
+          <div
+            className={`${glassCard} group min-h-[140px] flex flex-col justify-between hover:bg-neutral-400/40 hover:border-white/20`}
+          >
             <div className="flex items-start justify-between">
               <p className="text-xs font-medium uppercase tracking-widest text-purple-400/60 group-hover:text-purple-400 transition-colors duration-300">
                 Videos Watched
               </p>
-              <Play size={22} className="text-purple-400/60 group-hover:text-purple-400 transition-colors duration-300" />
+              <Play
+                size={22}
+                className="text-purple-400/60 group-hover:text-purple-400 transition-colors duration-300"
+              />
             </div>
             <h2 className="mt-4 text-4xl md:text-[2.7rem] font-semibold tracking-tight text-purple-400">
               {loading ? "..." : (stats?.videosWatched ?? 0)}
@@ -180,12 +360,17 @@ export default function DashboardPage() {
           </div>
 
           {/* PDFs Completed */}
-          <div className={`${glassCard} group min-h-[140px] flex flex-col justify-between hover:bg-neutral-400/40 hover:border-white/20`}>
+          <div
+            className={`${glassCard} group min-h-[140px] flex flex-col justify-between hover:bg-neutral-400/40 hover:border-white/20`}
+          >
             <div className="flex items-start justify-between">
               <p className="text-xs font-medium uppercase tracking-widest text-cyan-400/60 group-hover:text-cyan-400 transition-colors duration-300">
                 PDFs Completed
               </p>
-              <FileText size={22} className="text-cyan-400/60 group-hover:text-cyan-400 transition-colors duration-300" />
+              <FileText
+                size={22}
+                className="text-cyan-400/60 group-hover:text-cyan-400 transition-colors duration-300"
+              />
             </div>
             <h2 className="mt-4 text-4xl md:text-[2.7rem] font-semibold tracking-tight text-cyan-400">
               {loading ? "..." : (stats?.pdfsCompleted ?? 0)}
@@ -193,12 +378,17 @@ export default function DashboardPage() {
           </div>
 
           {/* Avg Quiz Score */}
-          <div className={`${glassCard} group min-h-[140px] flex flex-col justify-between hover:bg-neutral-400/40 hover:border-white/20`}>
+          <div
+            className={`${glassCard} group min-h-[140px] flex flex-col justify-between hover:bg-neutral-400/40 hover:border-white/20`}
+          >
             <div className="flex items-start justify-between">
               <p className="text-xs font-medium uppercase tracking-widest text-green-400/60 group-hover:text-green-400 transition-colors duration-300">
                 Avg Quiz Score
               </p>
-              <Award size={22} className="text-green-400/60 group-hover:text-green-400 transition-colors duration-300" />
+              <Award
+                size={22}
+                className="text-green-400/60 group-hover:text-green-400 transition-colors duration-300"
+              />
             </div>
             <div>
               <h2 className="mt-4 text-4xl md:text-[2.7rem] font-semibold tracking-tight text-green-400">
@@ -217,7 +407,9 @@ export default function DashboardPage() {
           <div className={glassCard}>
             <div className="flex items-center gap-2 mb-5">
               <BookOpen size={20} className="text-blue-400" />
-              <h3 className="font-semibold text-white/90 text-lg">Continue Learning</h3>
+              <h3 className="font-semibold text-white/90 text-lg">
+                Continue Learning
+              </h3>
             </div>
 
             {continueLoading ? (
@@ -232,8 +424,12 @@ export default function DashboardPage() {
             ) : continueItems.length === 0 ? (
               <div className="rounded-xl border border-white/5 bg-white/[0.03] p-6 text-center">
                 <BookOpen size={36} className="text-white/20 mx-auto mb-2" />
-                <p className="text-white/60 font-medium text-sm">No recent activity</p>
-                <p className="text-white/30 text-xs mt-1">Start learning a resource to see your progress here.</p>
+                <p className="text-white/60 font-medium text-sm">
+                  No recent activity
+                </p>
+                <p className="text-white/30 text-xs mt-1">
+                  Start learning a resource to see your progress here.
+                </p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -243,41 +439,58 @@ export default function DashboardPage() {
                   const iconColor = isPdf
                     ? "text-cyan-400"
                     : isPlaylist
-                    ? "text-purple-400"
-                    : "text-blue-400";
+                      ? "text-purple-400"
+                      : "text-blue-400";
                   const barGradient = isPdf
                     ? "from-cyan-500 to-cyan-400"
                     : isPlaylist
-                    ? "from-purple-500 to-purple-400"
-                    : "from-blue-500 to-blue-400";
+                      ? "from-purple-500 to-purple-400"
+                      : "from-blue-500 to-blue-400";
                   const buttonColor = isPdf
                     ? "text-cyan-400 hover:text-cyan-300"
                     : isPlaylist
-                    ? "text-purple-400 hover:text-purple-300"
-                    : "text-blue-400 hover:text-blue-300";
+                      ? "text-purple-400 hover:text-purple-300"
+                      : "text-blue-400 hover:text-blue-300";
 
                   return (
-                    <div key={item.id} className="rounded-xl border border-white/5 bg-white/[0.03] p-4">
+                    <div
+                      key={item.id}
+                      className="rounded-xl border border-white/5 bg-white/[0.03] p-4"
+                    >
                       <div className="flex items-start justify-between mb-3">
                         <div className="min-w-0 flex-1 pr-2">
-                          <p className="text-white/80 font-medium text-sm truncate">{item.title}</p>
-                          <p className="text-white/40 text-xs mt-1 truncate">{item.subtitle}</p>
+                          <p className="text-white/80 font-medium text-sm truncate">
+                            {item.title}
+                          </p>
+                          <p className="text-white/40 text-xs mt-1 truncate">
+                            {item.subtitle}
+                          </p>
                         </div>
                         {isPdf ? (
-                          <FileText size={16} className={`${iconColor} mt-1 flex-shrink-0`} />
+                          <FileText
+                            size={16}
+                            className={`${iconColor} mt-1 flex-shrink-0`}
+                          />
                         ) : (
-                          <Play size={16} className={`${iconColor} mt-1 flex-shrink-0`} />
+                          <Play
+                            size={16}
+                            className={`${iconColor} mt-1 flex-shrink-0`}
+                          />
                         )}
                       </div>
                       {/* Progress bar */}
                       <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
                         <div
                           className={`h-full rounded-full bg-gradient-to-r ${barGradient}`}
-                          style={{ width: `${Math.min(100, Math.max(0, item.progressPercentage))}%` }}
+                          style={{
+                            width: `${Math.min(100, Math.max(0, item.progressPercentage))}%`,
+                          }}
                         />
                       </div>
                       <div className="flex items-center justify-between mt-3">
-                        <span className="text-white/40 text-xs">{item.progressPercentage}% complete</span>
+                        <span className="text-white/40 text-xs">
+                          {item.progressPercentage}% complete
+                        </span>
                         <button
                           onClick={() => router.push(`/resources/${item.id}`)}
                           className={`text-xs ${buttonColor} transition-colors flex items-center gap-1 cursor-pointer`}
@@ -296,22 +509,32 @@ export default function DashboardPage() {
           <div className={glassCard}>
             <div className="flex items-center gap-2 mb-5">
               <BarChart3 size={20} className="text-purple-400" />
-              <h3 className="font-semibold text-white/90 text-lg">Project Completion</h3>
+              <h3 className="font-semibold text-white/90 text-lg">
+                Project Completion
+              </h3>
             </div>
 
             {/* Donut Charts Container (Side-by-Side) */}
             <div className="w-full min-h-[280px] rounded-xl border border-white/5 bg-white/[0.03] flex flex-col justify-center p-4 sm:p-6 relative overflow-hidden">
               {completionLoading ? (
                 <div className="text-center py-10">
-                  <BarChart3 size={56} className="text-white/20 mx-auto mb-3 animate-pulse" />
-                  <p className="text-white/30 text-sm">Loading project completion...</p>
+                  <BarChart3
+                    size={56}
+                    className="text-white/20 mx-auto mb-3 animate-pulse"
+                  />
+                  <p className="text-white/30 text-sm">
+                    Loading project completion...
+                  </p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-4 items-center h-full">
                   {/* Left Chart — Resource Completion */}
                   <div className="flex flex-col items-center justify-center space-y-3">
                     <div className="relative w-32 h-32 sm:w-36 sm:h-36 flex items-center justify-center">
-                      <svg className="w-full h-full transform -rotate-90" viewBox="0 0 120 120">
+                      <svg
+                        className="w-full h-full transform -rotate-90"
+                        viewBox="0 0 120 120"
+                      >
                         {/* Track circle */}
                         <circle
                           cx="60"
@@ -331,7 +554,12 @@ export default function DashboardPage() {
                           strokeWidth="10"
                           strokeDasharray={2 * Math.PI * 48}
                           strokeDashoffset={
-                            2 * Math.PI * 48 * (1 - Math.min(100, Math.max(0, completionPercentage)) / 100)
+                            2 *
+                            Math.PI *
+                            48 *
+                            (1 -
+                              Math.min(100, Math.max(0, completionPercentage)) /
+                                100)
                           }
                           strokeLinecap="round"
                           stroke="currentColor"
@@ -363,7 +591,10 @@ export default function DashboardPage() {
                   {/* Right Chart — Full Projects Completed */}
                   <div className="flex flex-col items-center justify-center space-y-3 sm:border-l sm:border-white/10 sm:pl-4">
                     <div className="relative w-32 h-32 sm:w-36 sm:h-36 flex items-center justify-center">
-                      <svg className="w-full h-full transform -rotate-90" viewBox="0 0 120 120">
+                      <svg
+                        className="w-full h-full transform -rotate-90"
+                        viewBox="0 0 120 120"
+                      >
                         {/* Track circle */}
                         <circle
                           cx="60"
@@ -383,7 +614,15 @@ export default function DashboardPage() {
                           strokeWidth="10"
                           strokeDasharray={2 * Math.PI * 48}
                           strokeDashoffset={
-                            2 * Math.PI * 48 * (1 - Math.min(100, Math.max(0, projectsCompletionPercentage)) / 100)
+                            2 *
+                            Math.PI *
+                            48 *
+                            (1 -
+                              Math.min(
+                                100,
+                                Math.max(0, projectsCompletionPercentage),
+                              ) /
+                                100)
                           }
                           strokeLinecap="round"
                           stroke="currentColor"
@@ -424,7 +663,9 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
               <Layers size={20} className="text-yellow-400" />
-              <h3 className="font-semibold text-white/90 text-lg">Active Projects</h3>
+              <h3 className="font-semibold text-white/90 text-lg">
+                Active Projects
+              </h3>
             </div>
             <button
               onClick={() => router.push("/projects")}
@@ -438,26 +679,41 @@ export default function DashboardPage() {
           {activeProjectsLoading ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="rounded-xl border border-white/5 bg-white/[0.03] p-4 animate-pulse h-16" />
+                <div
+                  key={i}
+                  className="rounded-xl border border-white/5 bg-white/[0.03] p-4 animate-pulse h-16"
+                />
               ))}
             </div>
           ) : activeProjectsList.length === 0 ? (
             <div className="rounded-xl border border-white/5 bg-white/[0.03] p-8 text-center">
               <FolderOpen size={36} className="text-white/20 mx-auto mb-2" />
-              <p className="text-white/60 font-medium text-sm">No active projects</p>
-              <p className="text-white/30 text-xs mt-1">Create a project to start tracking your learning progress.</p>
+              <p className="text-white/60 font-medium text-sm">
+                No active projects
+              </p>
+              <p className="text-white/30 text-xs mt-1">
+                Create a project to start tracking your learning progress.
+              </p>
             </div>
           ) : (
             <div className="space-y-3">
               {activeProjectsList.map((project, index) => {
                 const colorStyles = [
-                  { bar: "from-green-500 to-green-400", text: "text-green-400" },
-                  { bar: "from-yellow-500 to-yellow-400", text: "text-yellow-400" },
+                  {
+                    bar: "from-green-500 to-green-400",
+                    text: "text-green-400",
+                  },
+                  {
+                    bar: "from-yellow-500 to-yellow-400",
+                    text: "text-yellow-400",
+                  },
                   { bar: "from-blue-500 to-blue-400", text: "text-blue-400" },
                 ][index % 3];
 
                 const timeAgo = project.updatedAt
-                  ? formatDistanceToNow(new Date(project.updatedAt), { addSuffix: true })
+                  ? formatDistanceToNow(new Date(project.updatedAt), {
+                      addSuffix: true,
+                    })
                   : "";
 
                 return (
@@ -467,9 +723,14 @@ export default function DashboardPage() {
                     className="rounded-xl border border-white/5 bg-white/[0.03] p-4 flex flex-col sm:flex-row sm:items-center gap-4 hover:bg-white/[0.06] transition-colors cursor-pointer"
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="text-white/80 font-medium text-sm truncate">{project.title}</p>
+                      <p className="text-white/80 font-medium text-sm truncate">
+                        {project.title}
+                      </p>
                       <p className="text-white/40 text-xs mt-1">
-                        {project.totalResources} {project.totalResources === 1 ? "resource" : "resources"}
+                        {project.totalResources}{" "}
+                        {project.totalResources === 1
+                          ? "resource"
+                          : "resources"}
                         {timeAgo ? ` • Updated ${timeAgo}` : ""}
                       </p>
                     </div>
@@ -477,10 +738,14 @@ export default function DashboardPage() {
                       <div className="flex-1 h-2 rounded-full bg-white/10 overflow-hidden">
                         <div
                           className={`h-full rounded-full bg-gradient-to-r ${colorStyles.bar}`}
-                          style={{ width: `${Math.min(100, Math.max(0, project.progressPercentage))}%` }}
+                          style={{
+                            width: `${Math.min(100, Math.max(0, project.progressPercentage))}%`,
+                          }}
                         />
                       </div>
-                      <span className={`${colorStyles.text} text-xs font-medium w-10 text-right`}>
+                      <span
+                        className={`${colorStyles.text} text-xs font-medium w-10 text-right`}
+                      >
                         {project.progressPercentage}%
                       </span>
                     </div>
@@ -499,25 +764,85 @@ export default function DashboardPage() {
           <div className={glassCard}>
             <div className="flex items-center gap-2 mb-5">
               <Clock size={20} className="text-cyan-400" />
-              <h3 className="font-semibold text-white/90 text-lg">Recent Activity</h3>
+              <h3 className="font-semibold text-white/90 text-lg">
+                Recent Activity
+              </h3>
             </div>
 
             <div className="space-y-4">
-              {[
-                { action: "Completed video", detail: "React Hooks Deep Dive — Lesson 7", time: "2 hours ago", icon: <CheckCircle size={16} className="text-green-400" /> },
-                { action: "Started reading", detail: "System Design PDF — Chapter 3", time: "5 hours ago", icon: <FileText size={16} className="text-cyan-400" /> },
-                { action: "Quiz submitted", detail: "JavaScript Fundamentals — Score: 92%", time: "1 day ago", icon: <Award size={16} className="text-yellow-400" /> },
-                { action: "New project created", detail: "Cloud Computing Essentials", time: "2 days ago", icon: <FolderOpen size={16} className="text-purple-400" /> },
-              ].map((item, i) => (
-                <div key={i} className="flex items-start gap-3 rounded-xl border border-white/5 bg-white/[0.03] p-3">
-                  <div className="mt-0.5">{item.icon}</div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-white/70 text-sm font-medium">{item.action}</p>
-                    <p className="text-white/40 text-xs mt-0.5 truncate">{item.detail}</p>
-                  </div>
-                  <span className="text-white/30 text-xs whitespace-nowrap">{item.time}</span>
+              {activitiesLoading ? (
+                <div className="space-y-3">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div
+                      key={i}
+                      className="flex items-start gap-3 rounded-xl border border-white/5 bg-white/[0.03] p-3 animate-pulse h-16"
+                    />
+                  ))}
                 </div>
-              ))}
+              ) : recentActivities.length === 0 ? (
+                <div className="rounded-xl border border-white/5 bg-white/[0.03] p-6 text-center">
+                  <Clock size={36} className="text-white/20 mx-auto mb-2" />
+                  <p className="text-white/60 font-medium text-sm">
+                    No recent activity
+                  </p>
+                  <p className="text-white/30 text-xs mt-1">
+                    Start learning or create a project to see activity here.
+                  </p>
+                </div>
+              ) : (
+                recentActivities.map((activity, i) => {
+                  // Determine icon and color based on activity type
+                  let icon;
+                  let iconColor = "text-white/60";
+
+                  if (activity.type === "completed_video") {
+                    icon = <CheckCircle size={16} className="text-green-400" />;
+                    iconColor = "text-green-400";
+                  } else if (activity.type === "completed_pdf") {
+                    icon = <FileText size={16} className="text-cyan-400" />;
+                    iconColor = "text-cyan-400";
+                  } else if (activity.type === "started_video") {
+                    icon = <Play size={16} className="text-blue-400" />;
+                    iconColor = "text-blue-400";
+                  } else if (activity.type === "started_reading") {
+                    icon = <FileText size={16} className="text-cyan-400" />;
+                    iconColor = "text-cyan-400";
+                  } else if (activity.type === "project_created") {
+                    icon = <FolderOpen size={16} className="text-purple-400" />;
+                    iconColor = "text-purple-400";
+                  } else {
+                    icon = <Clock size={16} className={iconColor} />;
+                  }
+
+                  // Format time
+                  const timeAgo = formatDistanceToNow(
+                    new Date(activity.timestamp),
+                    {
+                      addSuffix: true,
+                    },
+                  );
+
+                  return (
+                    <div
+                      key={i}
+                      className="flex items-start gap-3 rounded-xl border border-white/5 bg-white/[0.03] p-3"
+                    >
+                      <div className="mt-0.5">{icon}</div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white/70 text-sm font-medium">
+                          {activity.action}
+                        </p>
+                        <p className="text-white/40 text-xs mt-0.5 truncate">
+                          {activity.title}
+                        </p>
+                      </div>
+                      <span className="text-white/30 text-xs whitespace-nowrap">
+                        {timeAgo}
+                      </span>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
 
@@ -525,23 +850,52 @@ export default function DashboardPage() {
           <div className={glassCard}>
             <div className="flex items-center gap-2 mb-5">
               <CalendarDays size={20} className="text-pink-400" />
-              <h3 className="font-semibold text-white/90 text-lg">Upcoming Deadlines</h3>
+              <h3 className="font-semibold text-white/90 text-lg">
+                Upcoming Deadlines
+              </h3>
             </div>
 
             <div className="space-y-4">
               {[
-                { title: "ML Foundations — Module 3 Quiz", date: "Sep 12, 2026", urgency: "text-red-400", badge: "2 days left" },
-                { title: "React Project — Final Submission", date: "Sep 15, 2026", urgency: "text-yellow-400", badge: "5 days left" },
-                { title: "DSA Practice Set — Week 4", date: "Sep 18, 2026", urgency: "text-white/50", badge: "8 days left" },
-                { title: "Design Review — Portfolio Project", date: "Sep 22, 2026", urgency: "text-white/50", badge: "12 days left" },
+                {
+                  title: "ML Foundations — Module 3 Quiz",
+                  date: "Sep 12, 2026",
+                  urgency: "text-red-400",
+                  badge: "2 days left",
+                },
+                {
+                  title: "React Project — Final Submission",
+                  date: "Sep 15, 2026",
+                  urgency: "text-yellow-400",
+                  badge: "5 days left",
+                },
+                {
+                  title: "DSA Practice Set — Week 4",
+                  date: "Sep 18, 2026",
+                  urgency: "text-white/50",
+                  badge: "8 days left",
+                },
+                {
+                  title: "Design Review — Portfolio Project",
+                  date: "Sep 22, 2026",
+                  urgency: "text-white/50",
+                  badge: "12 days left",
+                },
               ].map((item, i) => (
-                <div key={i} className="flex items-center gap-3 rounded-xl border border-white/5 bg-white/[0.03] p-3">
+                <div
+                  key={i}
+                  className="flex items-center gap-3 rounded-xl border border-white/5 bg-white/[0.03] p-3"
+                >
                   <CalendarDays size={16} className={item.urgency} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-white/70 text-sm font-medium truncate">{item.title}</p>
+                    <p className="text-white/70 text-sm font-medium truncate">
+                      {item.title}
+                    </p>
                     <p className="text-white/40 text-xs mt-0.5">{item.date}</p>
                   </div>
-                  <span className={`text-xs font-medium ${item.urgency} whitespace-nowrap`}>
+                  <span
+                    className={`text-xs font-medium ${item.urgency} whitespace-nowrap`}
+                  >
                     {item.badge}
                   </span>
                 </div>
@@ -553,7 +907,9 @@ export default function DashboardPage() {
         {/* ══════════════════════════════════════
            6. CREATE PROJECT CTA
            ══════════════════════════════════════ */}
-        <section className={`${glassCard} flex flex-col sm:flex-row items-center gap-6`}>
+        <section
+          className={`${glassCard} flex flex-col sm:flex-row items-center gap-6`}
+        >
           {/* Left icon */}
           <div className="flex-shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center">
             <Sparkles size={28} className="text-blue-400" />
@@ -565,7 +921,8 @@ export default function DashboardPage() {
               Start a New Project
             </h3>
             <p className="text-white/40 text-sm mt-1">
-              Organize your resources, track your progress, and achieve your learning goals faster.
+              Organize your resources, track your progress, and achieve your
+              learning goals faster.
             </p>
           </div>
 

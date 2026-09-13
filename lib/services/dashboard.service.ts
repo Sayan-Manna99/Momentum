@@ -37,6 +37,20 @@ export interface ActiveProjectItem {
   updatedAt: string;
 }
 
+export interface RecentActivityItem {
+  id: string;
+  type:
+    | "completed_video"
+    | "completed_pdf"
+    | "started_reading"
+    | "started_video"
+    | "project_created";
+  action: string;
+  title: string;
+  timestamp: string;
+  icon?: string;
+}
+
 export const getDashboardStats = async (
   userId: string,
 ): Promise<DashboardStats> => {
@@ -86,7 +100,10 @@ export const getProjectCompletionStats = async (
   await connectToDB();
 
   // Find all projects belonging to this user
-  const userProjects = await Project.find({ userId }, { _id: 1, status: 1 }).lean();
+  const userProjects = await Project.find(
+    { userId },
+    { _id: 1, status: 1 },
+  ).lean();
   const totalProjects = userProjects.length;
 
   const completedProjects = userProjects.filter(
@@ -95,7 +112,10 @@ export const getProjectCompletionStats = async (
 
   const projectsCompletionPercentage =
     totalProjects > 0
-      ? Math.min(100, Math.max(0, Math.round((completedProjects / totalProjects) * 100)))
+      ? Math.min(
+          100,
+          Math.max(0, Math.round((completedProjects / totalProjects) * 100)),
+        )
       : 0;
 
   if (totalProjects === 0) {
@@ -176,13 +196,15 @@ export const getContinueLearningResources = async (
   const resourceIds = recentProgressList.map((p) => p.resourceId);
   const resources = await Resource.find({ _id: { $in: resourceIds } }).lean();
 
-  const projectIds = resources
-    .map((r) => r.projectId)
-    .filter(Boolean);
+  const projectIds = resources.map((r) => r.projectId).filter(Boolean);
 
-  const projects = projectIds.length > 0
-    ? await Project.find({ _id: { $in: projectIds } }, { _id: 1, title: 1 }).lean()
-    : [];
+  const projects =
+    projectIds.length > 0
+      ? await Project.find(
+          { _id: { $in: projectIds } },
+          { _id: 1, title: 1 },
+        ).lean()
+      : [];
 
   const projectMap = new Map(projects.map((p) => [p._id.toString(), p.title]));
   const resourceMap = new Map(resources.map((r) => [r._id.toString(), r]));
@@ -216,8 +238,10 @@ export const getContinueLearningResources = async (
     let subtitle = "";
 
     if (resource.type === ResourceType.YOUTUBE_VIDEO) {
-      const watched = progress.lastWatchedPosition || progress.watchedDuration || 0;
-      const total = resource.totalDuration || resource.youtubeData?.duration || 0;
+      const watched =
+        progress.lastWatchedPosition || progress.watchedDuration || 0;
+      const total =
+        resource.totalDuration || resource.youtubeData?.duration || 0;
       subtitle =
         total > 0
           ? `Video • ${formatDurationStr(watched)} of ${formatDurationStr(total)} watched`
@@ -228,7 +252,9 @@ export const getContinueLearningResources = async (
       subtitle = `PDF • ${pagesRead} of ${totalPages} pages read`;
     } else if (resource.type === ResourceType.YOUTUBE_PLAYLIST) {
       const videoProgressArr = (progress as any).videoProgress || [];
-      const completedCount = videoProgressArr.filter((v: any) => v.completed).length;
+      const completedCount = videoProgressArr.filter(
+        (v: any) => v.completed,
+      ).length;
       const totalCount =
         resource.videoCount ||
         resource.youtubeData?.videos?.length ||
@@ -300,7 +326,13 @@ export const getTopActiveProjects = async (
 
       const progressPercentage =
         totalResources > 0
-          ? Math.min(100, Math.max(0, Math.round((completedResources / totalResources) * 100)))
+          ? Math.min(
+              100,
+              Math.max(
+                0,
+                Math.round((completedResources / totalResources) * 100),
+              ),
+            )
           : 0;
 
       return {
@@ -309,10 +341,172 @@ export const getTopActiveProjects = async (
         totalResources,
         completedResources,
         progressPercentage,
-        updatedAt: new Date(project.updatedAt || project.createdAt).toISOString(),
+        updatedAt: new Date(
+          project.updatedAt || project.createdAt,
+        ).toISOString(),
       };
     }),
   );
 
   return enriched;
+};
+
+export const getRecentActivities = async (
+  userId: string,
+  limit = 4,
+): Promise<RecentActivityItem[]> => {
+  await connectToDB();
+
+  const activities: RecentActivityItem[] = [];
+
+  // 1. Fetch recently completed videos/PDFs (with completedAt timestamp)
+  const completedProgress = await Progress.find({
+    userId,
+    completedAt: { $exists: true, $ne: null },
+  })
+    .sort({ completedAt: -1 })
+    .limit(20) // Fetch more to filter later
+    .lean();
+
+  // 2. Fetch recently started resources (with startedAt timestamp, not yet completed)
+  const startedProgress = await Progress.find({
+    userId,
+    startedAt: { $exists: true, $ne: null },
+    completedAt: { $exists: false },
+  })
+    .sort({ startedAt: -1 })
+    .limit(20)
+    .lean();
+
+  // 3. Fetch recently created projects
+  const recentProjects = await Project.find({
+    userId,
+  })
+    .sort({ createdAt: -1 })
+    .limit(20)
+    .lean();
+
+  // Get resource IDs and project IDs to fetch details
+  const resourceIds = [
+    ...completedProgress.map((p) => p.resourceId),
+    ...startedProgress.map((p) => p.resourceId),
+  ];
+
+  const projectIds = [...new Set(recentProjects.map((p) => p._id))];
+
+  const resources =
+    resourceIds.length > 0
+      ? await Resource.find({ _id: { $in: resourceIds } }).lean()
+      : [];
+
+  const projectsMap = new Map(
+    recentProjects.map((p) => [
+      p._id.toString(),
+      {
+        title: p.title,
+        createdAt: new Date(p.createdAt || Date.now()),
+      },
+    ]),
+  );
+
+  const resourceMap = new Map(
+    resources.map((r) => [
+      r._id.toString(),
+      {
+        title: r.title,
+        type: r.type,
+      },
+    ]),
+  );
+
+  // Process completed activities
+  for (const progress of completedProgress) {
+    const resourceIdStr = progress.resourceId.toString();
+    const resource = resourceMap.get(resourceIdStr);
+
+    if (!resource) continue;
+
+    const timestamp = new Date(progress.completedAt || Date.now());
+    let type: RecentActivityItem["type"];
+    let action: string;
+
+    if (resource.type === ResourceType.YOUTUBE_VIDEO) {
+      type = "completed_video";
+      action = "Completed video";
+    } else if (resource.type === ResourceType.PDF) {
+      type = "completed_pdf";
+      action = "Completed reading";
+    } else if (resource.type === ResourceType.YOUTUBE_PLAYLIST) {
+      type = "completed_video";
+      action = "Completed playlist";
+    } else {
+      type = "completed_video";
+      action = "Completed resource";
+    }
+
+    activities.push({
+      id: resourceIdStr,
+      type,
+      action,
+      title: resource.title || "Untitled Resource",
+      timestamp: timestamp.toISOString(),
+    });
+  }
+
+  // Process started activities
+  for (const progress of startedProgress) {
+    const resourceIdStr = progress.resourceId.toString();
+    const resource = resourceMap.get(resourceIdStr);
+
+    if (!resource) continue;
+
+    const timestamp = new Date(progress.startedAt || Date.now());
+    let type: RecentActivityItem["type"];
+    let action: string;
+
+    if (resource.type === ResourceType.YOUTUBE_VIDEO) {
+      type = "started_video";
+      action = "Started video";
+    } else if (resource.type === ResourceType.PDF) {
+      type = "started_reading";
+      action = "Started reading";
+    } else if (resource.type === ResourceType.YOUTUBE_PLAYLIST) {
+      type = "started_video";
+      action = "Started playlist";
+    } else {
+      type = "started_reading";
+      action = "Started resource";
+    }
+
+    activities.push({
+      id: resourceIdStr,
+      type,
+      action,
+      title: resource.title || "Untitled Resource",
+      timestamp: timestamp.toISOString(),
+    });
+  }
+
+  // Process project creation activities
+  for (const project of recentProjects) {
+    const projectIdStr = project._id.toString();
+    const timestamp = new Date(project.createdAt || Date.now());
+
+    activities.push({
+      id: projectIdStr,
+      type: "project_created",
+      action: "New project created",
+      title: project.title || "Untitled Project",
+      timestamp: timestamp.toISOString(),
+    });
+  }
+
+  // Sort by timestamp descending and return only the latest 'limit' items
+  activities.sort((a, b) => {
+    const timeA = new Date(a.timestamp).getTime();
+    const timeB = new Date(b.timestamp).getTime();
+    return timeB - timeA;
+  });
+
+  return activities.slice(0, limit);
 };
